@@ -1,0 +1,33 @@
+﻿using Discord.Interactions;
+using Lavalink4NET;
+using Microsoft.Extensions.Logging;
+using Lavalink4NET.Players.Queued;
+
+namespace DMusicBot.Modules;
+public sealed class LoopModule(IAudioService audioService, ILogger<LoopModule> logger) : MusicModule(audioService, logger)
+{
+    /// <summary>
+    ///     Loops the current song asynchronously.
+    /// </summary>
+    /// <returns>a task that represents the asynchronous operation</returns>
+    [SlashCommand("loop", description: "Loops the current song.", runMode: RunMode.Async)]
+    public async Task LoopAsync()
+    {
+        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+
+        if (player is null)
+        {
+            return;
+        }
+
+        if (player.RepeatMode != TrackRepeatMode.Track)
+        {
+            player.RepeatMode = TrackRepeatMode.Track;
+            await RespondAsync("Looping enabled.").ConfigureAwait(false);
+            return;
+        }
+
+        player.RepeatMode = TrackRepeatMode.None;
+        await RespondAsync("Looping disabled.").ConfigureAwait(false);
+    }
+}
