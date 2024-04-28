@@ -3,7 +3,7 @@ using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class StopModule(IAudioService audioService, ILogger<StopModule> logger) : MusicModule(audioService, logger)
+public sealed class StopModule(IAudioService audioService, ILogger<StopModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Stops the current track asynchronously.

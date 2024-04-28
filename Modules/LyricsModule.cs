@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 
 namespace DMusicBot.Modules;
-public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModule> logger) : MusicModule(audioService, logger)
+public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Shows lyrics to the song currently playing asynchronously.

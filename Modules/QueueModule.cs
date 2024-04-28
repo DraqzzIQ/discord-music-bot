@@ -6,7 +6,7 @@ using DMusicBot.Util;
 using System.Text;
 
 namespace DMusicBot.Modules;
-public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule> logger) : MusicModule(audioService, logger)
+public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Displays the queue asynchronously.

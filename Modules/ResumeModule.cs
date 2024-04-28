@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players;
 
 namespace DMusicBot.Modules;
-public sealed class ResumeModule(IAudioService audioService, ILogger<ResumeModule> logger) : MusicModule(audioService, logger)
+public sealed class ResumeModule(IAudioService audioService, ILogger<ResumeModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Resumes the music asynchronously.

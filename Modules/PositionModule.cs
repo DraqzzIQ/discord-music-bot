@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using DMusicBot.Util;
 
 namespace DMusicBot.Modules;
-public sealed class PositionModule(IAudioService audioService, ILogger<PositionModule> logger) : MusicModule(audioService, logger)
+public sealed class PositionModule(IAudioService audioService, ILogger<PositionModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Shows the track position asynchronously.

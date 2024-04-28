@@ -3,7 +3,7 @@ using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class SkipModule(IAudioService audioService, ILogger<SkipModule> logger) : MusicModule(audioService, logger)
+public sealed class SkipModule(IAudioService audioService, ILogger<SkipModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Skips the current track asynchronously.

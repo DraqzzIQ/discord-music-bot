@@ -7,7 +7,7 @@ using Discord;
 using DMusicBot.Util;
 
 namespace DMusicBot.Modules;
-public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModule> logger) : MusicModule(audioService, logger)
+public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Enqueues the music at the front asynchronously.

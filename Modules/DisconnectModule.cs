@@ -3,7 +3,7 @@ using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class DisconnectModule(IAudioService audioService, ILogger<DisconnectModule> logger) : MusicModule(audioService, logger)
+public sealed class DisconnectModule(IAudioService audioService, ILogger<DisconnectModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Disconnects from the current voice channel connected to asynchronously.

@@ -13,13 +13,13 @@ using Microsoft.Extensions.Logging;
 ///     Presents some of the main features of the Lavalink4NET-Library.
 /// </summary>
 [RequireContext(ContextType.Guild)]
-public class MusicModule : InteractionModuleBase<SocketInteractionContext>
+public class BaseModule : InteractionModuleBase<SocketInteractionContext>
 {
     protected readonly IAudioService _audioService;
-    protected readonly ILogger<MusicModule> _logger;
+    protected readonly ILogger<BaseModule> _logger;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="MusicModule"/> class.
+    ///     Initializes a new instance of the <see cref="BaseModule"/> class.
     /// </summary>
     /// <param name="audioService">the audio service</param>
     /// <param name="logger">the logger</param>
@@ -29,7 +29,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="logger"/> is <see langword="null"/>.
     /// </exception>
-    public MusicModule(IAudioService audioService, ILogger<MusicModule> logger)
+    public BaseModule(IAudioService audioService, ILogger<BaseModule> logger)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         ArgumentNullException.ThrowIfNull(logger);

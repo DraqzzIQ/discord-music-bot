@@ -3,7 +3,7 @@ using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class VolumeModule(IAudioService audioService, ILogger<VolumeModule> logger) : MusicModule(audioService, logger)
+public sealed class VolumeModule(IAudioService audioService, ILogger<VolumeModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Updates the player volume asynchronously.

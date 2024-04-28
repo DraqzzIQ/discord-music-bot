@@ -3,7 +3,7 @@ using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class ShuffleModule(IAudioService audioService, ILogger<ShuffleModule> logger) : MusicModule(audioService, logger)
+public sealed class ShuffleModule(IAudioService audioService, ILogger<ShuffleModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Shuffles the queue asynchronously.

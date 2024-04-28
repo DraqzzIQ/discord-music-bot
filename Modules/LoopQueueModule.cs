@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players.Queued;
 
 namespace DMusicBot.Modules;
-public sealed class LoopQueueModule(IAudioService audioService, ILogger<LoopQueueModule> logger) : MusicModule(audioService, logger)
+public sealed class LoopQueueModule(IAudioService audioService, ILogger<LoopQueueModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Loops the queue asynchronously.

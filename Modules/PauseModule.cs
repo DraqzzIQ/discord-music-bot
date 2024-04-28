@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players;
 
 namespace DMusicBot.Modules;
-public sealed class PauseModule(IAudioService audioService, ILogger<PauseModule> logger) : MusicModule(audioService, logger)
+public sealed class PauseModule(IAudioService audioService, ILogger<PauseModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Pauses the music asynchronously.

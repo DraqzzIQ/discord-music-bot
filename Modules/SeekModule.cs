@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using DMusicBot.Util;
 
 namespace DMusicBot.Modules;
-public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> logger) : MusicModule(audioService, logger)
+public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Seeks to the provided position asynchronously.

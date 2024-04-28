@@ -7,7 +7,7 @@ using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> logger) : MusicModule(audioService, logger)
+public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
     ///     Plays music asynchronously.
