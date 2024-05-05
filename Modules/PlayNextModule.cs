@@ -27,6 +27,7 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
         }
 
         var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.YouTube).ConfigureAwait(false);
+        bool isPlaying = player.CurrentItem is not null;
 
 
         if (tracks.Count is 0)
@@ -49,7 +50,15 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
                 await player.Queue.InsertRangeAsync(0, tracks.Tracks.Select(t => new TrackQueueItem(t))).ConfigureAwait(false);
             }
 
-            await FollowupAsync($"🔈 Added {tracks.Count} tracks to queue").ConfigureAwait(false);
+            if (isPlaying)
+            {
+                await FollowupAsync($"🔈 Added {tracks.Count} tracks to queue").ConfigureAwait(false);
+            }
+            else
+            {
+                await FollowupAsync($"🔈 Added {tracks.Count} tracks to queue", ephemeral: true).ConfigureAwait(false);
+                await DeleteOriginalResponseAsync().ConfigureAwait(false);
+            }
             return;
         }
 
@@ -68,7 +77,16 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
         else
             await player.Queue.InsertAsync(0, new TrackQueueItem(track)).ConfigureAwait(false);
 
+
         Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
-        await FollowupAsync(embed: embed).ConfigureAwait(false);
+        if (isPlaying)
+        {
+            await FollowupAsync(embed: embed).ConfigureAwait(false);
+        }
+        else
+        {
+            await FollowupAsync(embed: embed, ephemeral: true).ConfigureAwait(false);
+            await DeleteOriginalResponseAsync().ConfigureAwait(false);
+        }
     }
 }
