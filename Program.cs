@@ -22,7 +22,7 @@ builder.Services.AddHostedService<DiscordClientHost>();
 // Lavalink
 builder.Services.AddLavalink();
 builder.Services.AddInactivityTracking();
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
 
 builder.Services.ConfigureLavalink(options =>
