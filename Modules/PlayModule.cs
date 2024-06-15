@@ -29,7 +29,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
             return;
         }
 
-        var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.YouTube).ConfigureAwait(false);
+        var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.Deezer).ConfigureAwait(false);
 
 
         if (tracks.Count is 0)

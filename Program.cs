@@ -7,8 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using DMusicBot;
-using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Lavalink4NET;
+using Lavalink4NET.Integrations.LyricsJava.Extensions;
+using Discord.Rest;
 
 Config.ReadConfiguration();
 
@@ -16,6 +17,9 @@ var builder = new HostApplicationBuilder(args);
 
 // Discord
 builder.Services.AddSingleton<DiscordSocketClient>();
+// tmp fix:
+builder.Services.AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>());
+// end tmp fix
 builder.Services.AddSingleton<InteractionService>();
 builder.Services.AddHostedService<DiscordClientHost>();
 
@@ -23,7 +27,6 @@ builder.Services.AddHostedService<DiscordClientHost>();
 builder.Services.AddLavalink();
 builder.Services.AddInactivityTracking();
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
-
 
 builder.Services.ConfigureLavalink(options =>
 {
@@ -41,7 +44,10 @@ builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
     options.ExcludeBots = true;
 });
 
+
 var app = builder.Build();
+
+// Lyrics
 app.UseLyricsJava();
 
 IAudioService? audioService = app.Services.GetService<IAudioService>();
