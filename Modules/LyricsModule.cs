@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Lavalink4NET;
 using Lavalink4NET.Integrations.LyricsJava;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
+using Lavalink4NET.Tracks;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
@@ -44,13 +45,43 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
 
         Embed[] lyricsParts = SplitIntoChunks(lyrics, player.Position!.Value.Position).Take(10).ToArray();
 
-        await FollowupAsync(embeds: lyricsParts).ConfigureAwait(false);
+        IUserMessage message = await FollowupAsync(embeds: lyricsParts).ConfigureAwait(false);
+
+        // continue updating the message with the current lyrics
+        if (lyrics.TimedLines is null)
+            return;
+
+        LavalinkTrack currentTrack = player.CurrentTrack!;
+        TimedLyricsLine? currentLine = FindCurrentLine(lyrics, player.Position!.Value.Position);
+
+        while (player.CurrentTrack is not null && player.CurrentTrack == currentTrack)
+        {
+            TimedLyricsLine? nextLine = FindCurrentLine(lyrics, player.Position!.Value.Position);
+            if (currentLine != nextLine && nextLine is not null && nextLine.HasValue && !string.IsNullOrEmpty(nextLine.Value.Line))
+            {
+                currentLine = nextLine;
+                lyricsParts = SplitIntoChunks(lyrics, player.Position!.Value.Position).Take(10).ToArray();
+
+                for (int i = 0; i < lyricsParts.Length; i++)
+                    await message.ModifyAsync(m => m.Embeds = lyricsParts).ConfigureAwait(false);
+            }
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+    }
+
+    private static TimedLyricsLine? FindCurrentLine(Lyrics lyrics, TimeSpan playerPosition)
+    {
+        if (lyrics.TimedLines is null)
+            return null;
+
+        return lyrics.TimedLines.Value.FirstOrDefault(line => line.Range.Start <= playerPosition && playerPosition <= line.Range.End);
     }
 
     private static List<Embed> SplitIntoChunks(Lyrics lyrics, TimeSpan playerPosition)
     {
         List<Embed> chunks = new();
         EmbedBuilder chunk = new();
+        bool reachedMaxSize = false;
 
         chunk.Title = $"📃 Lyrics for {lyrics.Track.Title} by {lyrics.Track.Author}:";
 
@@ -64,10 +95,16 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
                 string line = lines[i];
                 chunk.Description += line + "\n";
 
-                if (lines.Count > i + 1 && chunk.Description.Length + lines[i + 1].Length + 10 > MaxMessageSize)
+                // max message length is 6000 characters, 1 embed = 4000 characters max
+                int max = reachedMaxSize ? 6000 - MaxMessageSize : MaxMessageSize;
+                if (lines.Count > i + 1 && chunk.Description.Length + lines[i + 1].Length + 10 > max)
                 {
                     chunks.Add(chunk.Build());
                     chunk = new EmbedBuilder();
+                    // only 2 embeds with a combined max of 6000 characters are allowed, 1 embed = 4000 characters max
+                    if (reachedMaxSize)
+                        break;
+                    reachedMaxSize = true;
                 }
             }
 
@@ -88,10 +125,16 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
             else
                 chunk.Description += line.Line + "\n";
 
-            if (lyrics.TimedLines.Value.Length > i + 1 && chunk.Description.Length + lyrics.TimedLines.Value[i + 1].Line.Length + 10 > MaxMessageSize)
+            // max message length is 6000 characters, 1 embed = 4000 characters max
+            int max = reachedMaxSize ? 6000 - MaxMessageSize : MaxMessageSize;
+            if (lyrics.TimedLines.Value.Length > i + 1 && chunk.Description.Length + lyrics.TimedLines.Value[i + 1].Line.Length + 10 > max)
             {
                 chunks.Add(chunk.Build());
                 chunk = new EmbedBuilder();
+                // only 2 embeds with a combined max of 6000 characters are allowed, 1 embed = 4000 characters max
+                if (reachedMaxSize)
+                    break;
+                reachedMaxSize = true;
             }
         }
 
