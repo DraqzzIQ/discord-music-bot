@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 namespace DMusicBot;
 internal class Config
 {
+    private static string FilePath = "config.json";
     internal class ConfigDto
     {
         public string BotToken;
@@ -14,23 +15,38 @@ internal class Config
         public ulong DebugGuildId;
     }
 
-    public static ConfigDto Data = new();
+    private static ConfigDto? _data = null;
 
-    public static string FilePath = "config.json";
-
-    public static void ReadConfiguration()
+    public static ConfigDto Data
     {
-        if (!File.Exists(FilePath)) File.WriteAllText(FilePath, JsonConvert.SerializeObject(Data));
+        get
+        {
+            if (_data is null)
+                ReadConfiguration();
+
+            return _data!;
+        }
+    }
+
+    private static void ReadConfiguration()
+    {
+        if (!File.Exists(FilePath))
+        {
+            File.WriteAllText(FilePath, JsonConvert.SerializeObject(new ConfigDto()));
+            Console.WriteLine($"Config file created at {FilePath}. Please fill in the necessary information and restart the bot.");
+            Environment.Exit(1);
+        }
 
         var fileData = File.ReadAllText(FilePath);
 
         try
         {
-            JsonConvert.PopulateObject(fileData, Data);
+            _data = JsonConvert.DeserializeObject<ConfigDto>(fileData);
         }
         catch (Exception e)
         {
             Console.WriteLine("Error reading " + FilePath + "\n" + e.Message);
+            Environment.Exit(1);
         }
     }
 

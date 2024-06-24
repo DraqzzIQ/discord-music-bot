@@ -11,7 +11,7 @@ public sealed class VolumeModule(IAudioService audioService, ILogger<VolumeModul
     /// <param name="volume">the volume (0 - 1000)</param>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("volume", description: "Sets the player volume (0 - 1000%)", runMode: RunMode.Async)]
-    public async Task Volume([MinValue(0), MaxValue(1000)] int volume = 100)
+    public async Task Volume([Summary("volume", "The volume to set")] [MinValue(0), MaxValue(1000)] int volume = 100)
     {
         if (volume is > 1000 or < 0)
         {

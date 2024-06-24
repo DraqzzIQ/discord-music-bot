@@ -15,7 +15,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
     /// <param name="query">the search query</param>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("play", description: "Plays music", runMode: RunMode.Async)]
-    public async Task Play(string query)
+    public async Task Play([Summary("query", "The name or link to a song")] string query)
     {
         await DeferAsync().ConfigureAwait(false);
 

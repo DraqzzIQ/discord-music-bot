@@ -11,7 +11,7 @@ public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> l
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("seek", description: "Seeks to the provided position", runMode: RunMode.Async)]
-    public async Task Seek([MinValue(0)] uint seconds)
+    public async Task Seek([Summary("seconds", "The position in seconds to seek to")][MinValue(0)] uint seconds)
     {
         TimeSpan position = TimeSpan.FromSeconds(seconds);
 

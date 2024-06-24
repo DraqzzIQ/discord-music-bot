@@ -10,8 +10,7 @@ using DMusicBot;
 using Lavalink4NET;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Discord.Rest;
-
-Config.ReadConfiguration();
+using DMusicBot.Services;
 
 var builder = new HostApplicationBuilder(args);
 
@@ -43,6 +42,9 @@ builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
     options.Timeout = TimeSpan.FromSeconds(30);
     options.ExcludeBots = true;
 });
+
+// Db Service
+builder.Services.AddSingleton<IDbService, MongoDbService>();
 
 
 var app = builder.Build();
