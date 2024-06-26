@@ -9,10 +9,11 @@ using Microsoft.Extensions.Logging;
 namespace DMusicBot.Modules;
 public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModule> logger) : BaseModule(audioService, logger)
 {
-    private const int MaxMessageSize = 4000;
+    private const int MaxEmbedMessageSize = 4000;
+    private const int MaxTotalMessageSize = 5900;
 
     /// <summary>
-    ///     Shows lyrics to the song currently playing asynchronously.
+    ///     Shows lyrics to the track currently playing asynchronously.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("lyrics", description: "Searches for lyrics", runMode: RunMode.Async)]
@@ -79,7 +80,7 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
 
     private static List<Embed> SplitIntoChunks(Lyrics lyrics, TimeSpan playerPosition)
     {
-        List<Embed> chunks = new();
+        List<Embed> chunks = [];
         EmbedBuilder chunk = new();
         bool reachedMaxSize = false;
 
@@ -96,20 +97,20 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
                 chunk.Description += line + "\n";
 
                 // max message length is 6000 characters, 1 embed = 4000 characters max
-                int max = reachedMaxSize ? 6000 - MaxMessageSize : MaxMessageSize;
-                if (lines.Count > i + 1 && chunk.Description.Length + lines[i + 1].Length + 10 > max)
-                {
-                    chunks.Add(chunk.Build());
-                    chunk = new EmbedBuilder();
-                    // only 2 embeds with a combined max of 6000 characters are allowed, 1 embed = 4000 characters max
-                    if (reachedMaxSize)
-                        break;
-                    reachedMaxSize = true;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(chunk.Description))
+                int max = reachedMaxSize ? MaxTotalMessageSize - MaxEmbedMessageSize : MaxEmbedMessageSize;
+                if (lines.Count <= i + 1 || chunk.Description.Length + lines[i + 1].Length + 10 <= max)
+                    continue;
+                
                 chunks.Add(chunk.Build());
+                chunk = new EmbedBuilder();
+                // only 2 embeds with a combined max of 6000 characters are allowed, 1 embed = 4000 characters max
+                if (reachedMaxSize)
+                    break;
+                reachedMaxSize = true;
+            }
+            
+            if (!string.IsNullOrWhiteSpace(chunk.Description))
+                chunks.Add(chunk.WithCurrentTimestamp().Build());
 
             return chunks;
         }
@@ -126,21 +127,21 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
                 chunk.Description += line.Line + "\n";
 
             // max message length is 6000 characters, 1 embed = 4000 characters max
-            int max = reachedMaxSize ? 6000 - MaxMessageSize : MaxMessageSize;
-            if (lyrics.TimedLines.Value.Length > i + 1 && chunk.Description.Length + lyrics.TimedLines.Value[i + 1].Line.Length + 10 > max)
-            {
-                chunks.Add(chunk.Build());
-                chunk = new EmbedBuilder();
-                // only 2 embeds with a combined max of 6000 characters are allowed, 1 embed = 4000 characters max
-                if (reachedMaxSize)
-                    break;
-                reachedMaxSize = true;
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(chunk.Description))
+            int max = reachedMaxSize ? MaxTotalMessageSize - MaxEmbedMessageSize : MaxEmbedMessageSize;
+            if (lyrics.TimedLines.Value.Length <= i + 1 || chunk.Description.Length + lyrics.TimedLines.Value[i + 1].Line.Length + 10 <= max) 
+                continue;
+            
             chunks.Add(chunk.Build());
-
+            chunk = new EmbedBuilder();
+            // only 2 embeds with a combined max of 6000 characters are allowed, 1 embed = 4000 characters max
+            if (reachedMaxSize)
+                break;
+            reachedMaxSize = true;
+        }
+        
+        if (!string.IsNullOrWhiteSpace(chunk.Description))
+            chunks.Add(chunk.WithCurrentTimestamp().Build());
+        
         return chunks;
     }
 }

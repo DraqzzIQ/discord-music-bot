@@ -22,15 +22,21 @@ builder.Services.AddSingleton<IRestClientProvider>(x => x.GetRequiredService<Dis
 builder.Services.AddSingleton<InteractionService>();
 builder.Services.AddHostedService<DiscordClientHost>();
 
+// Logging
+#if DEBUG
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug));
+#else
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
+#endif
+
+
 // Lavalink
 builder.Services.AddLavalink();
-builder.Services.AddInactivityTracking();
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
-
+builder.Services.AddInactivityTracker<UsersInactivityTracker>();
 builder.Services.ConfigureLavalink(options =>
 {
-    options.Passphrase = Config.Data.LL_Password;
-    options.BaseAddress = new Uri("http://" + Config.Data.LL_Hostname + ":" + Config.Data.LL_Port);
+    options.Passphrase = Config.LavaLinkPassword;
+    options.BaseAddress = new Uri(Config.LavaLinkConnectionString);
     options.ReadyTimeout = TimeSpan.FromSeconds(10);
     options.HttpClientName = "LavalinkHttpClient";
     options.Label = "DMusicBot";
@@ -39,7 +45,7 @@ builder.Services.ConfigureLavalink(options =>
 builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
 {
     options.Threshold = 1;
-    options.Timeout = TimeSpan.FromSeconds(30);
+    options.Timeout = TimeSpan.FromSeconds(180);
     options.ExcludeBots = true;
 });
 

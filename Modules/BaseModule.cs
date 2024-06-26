@@ -1,11 +1,12 @@
-﻿namespace DMusicBot.Modules;
+﻿using Lavalink4NET.Players.Queued;
+
+namespace DMusicBot.Modules;
 
 using System;
 using System.Threading.Tasks;
 using Discord.Interactions;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
-using Lavalink4NET.Players.Vote;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 
@@ -47,13 +48,13 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
     /// <returns>
     ///     a task that represents the asynchronous operation. The task result is the lavalink player.
     /// </returns>
-    protected async ValueTask<VoteLavalinkPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true)
+    protected async ValueTask<QueuedLavalinkPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true)
     {
         var retrieveOptions = new PlayerRetrieveOptions(
             ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
 
         var result = await _audioService.Players
-            .RetrieveAsync(Context, playerFactory: PlayerFactory.Vote, retrieveOptions)
+            .RetrieveAsync(Context, playerFactory: PlayerFactory.Queued, retrieveOptions)
             .ConfigureAwait(false);
 
         if (!result.IsSuccess)

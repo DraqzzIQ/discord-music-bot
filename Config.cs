@@ -1,58 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-
-namespace DMusicBot;
-internal class Config
+﻿namespace DMusicBot;
+public class Config
 {
-    private static string FilePath = "config.json";
-    internal class ConfigDto
-    {
-        public string BotToken;
-        public string LL_Hostname;
-        public int LL_Port;
-        public string LL_Password;
-        public ulong DebugGuildId;
-    }
-
-    private static ConfigDto? _data = null;
-
-    public static ConfigDto Data
-    {
-        get
-        {
-            if (_data is null)
-                ReadConfiguration();
-
-            return _data!;
-        }
-    }
-
-    private static void ReadConfiguration()
-    {
-        if (!File.Exists(FilePath))
-        {
-            File.WriteAllText(FilePath, JsonConvert.SerializeObject(new ConfigDto()));
-            Console.WriteLine($"Config file created at {FilePath}. Please fill in the necessary information and restart the bot.");
-            Environment.Exit(1);
-        }
-
-        var fileData = File.ReadAllText(FilePath);
-
-        try
-        {
-            _data = JsonConvert.DeserializeObject<ConfigDto>(fileData);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error reading " + FilePath + "\n" + e.Message);
-            Environment.Exit(1);
-        }
-    }
-
-    public static void SaveConfig()
-    {
-        string output = JsonConvert.SerializeObject(Data);
-        File.WriteAllText(FilePath, output);
-    }
+    public static readonly string BotToken = Environment.GetEnvironmentVariable("MUSIC_BOT_TOKEN") ?? throw new ArgumentNullException(nameof(BotToken));
+    public static readonly string LavaLinkConnectionString = Environment.GetEnvironmentVariable("LAVA_LINK_CONNECTION_STRING") ?? throw new ArgumentNullException(nameof(LavaLinkConnectionString));
+    public static readonly string LavaLinkPassword = Environment.GetEnvironmentVariable("LAVA_LINK_PASSWORD") ?? throw new ArgumentNullException(nameof(LavaLinkPassword));
+    public static readonly string DbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? throw new ArgumentNullException(nameof(DbConnectionString));
+    public static readonly ulong DebugGuildId = ulong.Parse(Environment.GetEnvironmentVariable("DEBUG_GUILD_ID") ?? "0");
 }

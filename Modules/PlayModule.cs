@@ -15,7 +15,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
     /// <param name="query">the search query</param>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("play", description: "Plays music", runMode: RunMode.Async)]
-    public async Task Play([Summary("query", "The name or link to a song")] string query)
+    public async Task Play([Summary("track", "The name or link to a track")] string query)
     {
         await DeferAsync().ConfigureAwait(false);
 
@@ -32,7 +32,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
         var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.Deezer).ConfigureAwait(false);
 
 
-        if (tracks.Count is 0)
+        if (tracks.Count == 0)
         {
             await FollowupAsync("😖 No results.").ConfigureAwait(false);
             return;
@@ -66,7 +66,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
 
         var position = await player.PlayAsync(track).ConfigureAwait(false);
 
-        Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
+        Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
         await FollowupAsync(embed: embed).ConfigureAwait(false);
     }
 }

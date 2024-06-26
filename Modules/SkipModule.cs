@@ -10,7 +10,7 @@ public sealed class SkipModule(IAudioService audioService, ILogger<SkipModule> l
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("skip", description: "Skips the current track", runMode: RunMode.Async)]
-    public async Task Skip([Summary("count", "How many songs to skip")][MinValue(1)] int count = 1)
+    public async Task Skip([Summary("count", "How many tracks to skip")][MinValue(1)] int count = 1)
     {
         var player = await GetPlayerAsync(connectToVoiceChannel: false);
 

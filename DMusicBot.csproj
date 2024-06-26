@@ -18,6 +18,12 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+		<PackageReference Include="MongoDB.Driver" Version="2.26.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Attributes\" />
+	  <Folder Include="TypeConverters\" />
 	</ItemGroup>
 
 </Project>

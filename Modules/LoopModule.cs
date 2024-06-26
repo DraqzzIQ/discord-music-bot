@@ -7,10 +7,10 @@ namespace DMusicBot.Modules;
 public sealed class LoopModule(IAudioService audioService, ILogger<LoopModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
-    ///     Loops the current song asynchronously.
+    ///     Loops the current track asynchronously.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
-    [SlashCommand("loop", description: "Loops the current song.", runMode: RunMode.Async)]
+    [SlashCommand("loop", description: "Loops the current track.", runMode: RunMode.Async)]
     public async Task LoopAsync()
     {
         var player = await GetPlayerAsync(connectToVoiceChannel: false);

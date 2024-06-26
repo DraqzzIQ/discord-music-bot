@@ -1,6 +1,6 @@
 # DMusicBot
 
-Simple Music Bot for Discord written in C# using [Lavalink4NET](https://github.com/angelobreuer/Lavalink4NET) and [Discord.NET](https://github.com/discord-net/Discord.Net)
+Music Bot for Discord written in C# using [Lavalink4NET](https://github.com/angelobreuer/Lavalink4NET) and [Discord.NET](https://github.com/discord-net/Discord.Net)
 
 
 ## Features
@@ -13,14 +13,15 @@ Simple Music Bot for Discord written in C# using [Lavalink4NET](https://github.c
 - Shuffle
 - Lyrics
 - Seek
+- Playlists
 
-## config.json
+## Environment Variables
 ```
 {
-    "BotToken": "bot_token", // Discord bot token
-    "LL_Hostname": "localhost", // Lavalink hostname
-    "LL_Port": 2333, // Lavalink port
-    "LL_Password": "youshallnotpass", // Lavalink password
-    "DebugGuildId": 0, // Guild ID to register commands to for debugging
+    export MUSIC_BOT_TOKEN=bot-token // Required, Discord Bot Token
+    export LAVA_LINK_CONNECTION_STRING=http://127.0.0.1:2333 // Required, Lavalink Connection String
+    export LAVA_LINK_PASSWORD=lavalink-password // Required, Lavalink Password
+    export DB_CONNECTION_STRING=connection-string // Required, Database Connection String (MongoDB)
+    export DEBUG_GUILD_ID=1234567890 // Optional, used for debugging purposes
 }
 ```

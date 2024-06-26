@@ -4,8 +4,10 @@ using Microsoft.Extensions.Logging;
 using Discord;
 using DMusicBot.Util;
 using System.Text;
+using Lavalink4NET.Players;
 
 namespace DMusicBot.Modules;
+
 public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule> logger) : BaseModule(audioService, logger)
 {
     /// <summary>
@@ -15,6 +17,8 @@ public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule>
     [SlashCommand("queue", description: "Displays the queue", runMode: RunMode.Async)]
     public async Task Queue()
     {
+        await DeferAsync().ConfigureAwait(false);
+        
         var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
@@ -25,51 +29,20 @@ public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule>
         // nothing playing
         if (player.CurrentItem is null)
         {
-            await RespondAsync("Nothing playing!").ConfigureAwait(false);
+            await FollowupAsync("Nothing playing!").ConfigureAwait(false);
             return;
         }
 
-        TimeSpan totalDuration = TimeSpan.Zero;
+        TimeSpan totalDuration = player.Queue.Aggregate(TimeSpan.Zero, (current, track) => current + track.Track!.Duration);
 
-        foreach (var track in player.Queue)
-        {
-            totalDuration += track.Track!.Duration;
-        }
+        int index = 0;
+        List<string> queueList = [$"Playing Now: [{player.CurrentTrack!.Title}]({player.CurrentTrack!.Uri})"];
+        queueList.AddRange(player.Queue.Select(track => $"{++index + 1} [{track.Track!.Title}]({track.Track!.Uri})"));
 
+        Embed[] embeds =
+            EmbedCreator.CreateEmbeds($"Queue (Total Duration: {TimeSpanFormatter.FormatDuration(totalDuration)}, Total Tracks: {player.Queue.Count})",
+                queueList);
 
-        var listBuilder = new StringBuilder();
-
-        listBuilder.Append($"Now Playing: [{player.CurrentTrack!.Title}]({player.CurrentTrack!.Uri})\n");
-
-        bool alreadyResponded = false;
-        uint index = 2;
-
-        foreach (var track in player.Queue)
-        {
-            if (listBuilder.Length + $"{index} [{track.Track!.Title}]({track.Track!.Uri})\n".Length > 4000)
-            {
-                Embed embed = EmbedCreator.CreateEmbed($"Queue (Total Duration: {TimeSpanFormatter.FormatDuration(totalDuration)}, Total Songs: {player.Queue.Count})", $"{listBuilder}", Color.Blue);
-                if (!alreadyResponded)
-                {
-                    alreadyResponded = true;
-                    await RespondAsync(embed: embed).ConfigureAwait(false);
-                }
-                else
-                {
-                    await FollowupAsync(embed: embed).ConfigureAwait(false);
-                }
-                listBuilder.Clear();
-            }
-
-            listBuilder.Append($"{index} [{track.Track!.Title}]({track.Track!.Uri})\n");
-            index++;
-        }
-
-        Embed embed1 = EmbedCreator.CreateEmbed($"Queue (Total Duration: {TimeSpanFormatter.FormatDuration(totalDuration)}, Total Songs: {player.Queue.Count})", $"{listBuilder}", Color.Blue);
-
-        if (!alreadyResponded)
-            await RespondAsync(embed: embed1).ConfigureAwait(false);
-        else
-            await FollowupAsync(embed: embed1).ConfigureAwait(false);
+        await FollowupAsync(embeds: embeds).ConfigureAwait(false);
     }
 }

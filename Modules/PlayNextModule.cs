@@ -15,9 +15,12 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
     /// <param name="query">the search query</param>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("play_next", description: " Enqueues the music at the front", runMode: RunMode.Async)]
-    public async Task Play([Summary("query", "The name or link to a song")] string query)
+    public async Task Play([Summary("track", "The name or link to a track")] string query)
     {
         await DeferAsync().ConfigureAwait(false);
+        
+        // Set the text channel for the event handler
+        AudioServiceEventHandler.TextChannel = Context.Channel;
 
         var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
 
@@ -29,7 +32,7 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
         var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.YouTube).ConfigureAwait(false);
 
 
-        if (tracks.Count is 0)
+        if (tracks.Count == 0)
         {
             await FollowupAsync("😖 No results.").ConfigureAwait(false);
             return;
@@ -68,7 +71,7 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
         else
             await player.Queue.InsertAsync(0, new TrackQueueItem(track)).ConfigureAwait(false);
 
-        Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
+        Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
         await FollowupAsync(embed: embed).ConfigureAwait(false);
     }
 }

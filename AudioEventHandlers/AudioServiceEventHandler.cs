@@ -9,7 +9,7 @@ internal static class AudioServiceEventHandler
 {
     public static IMessageChannel? TextChannel = null;
 
-    public static async Task TrackStartedHandler(object sender, TrackStartedEventArgs args)
+    private static async Task TrackStartedHandler(object sender, TrackStartedEventArgs args)
     {
         if (TextChannel is null)
             return;
@@ -20,7 +20,7 @@ internal static class AudioServiceEventHandler
                 return;
         }
 
-        Embed embed = EmbedCreator.CreateEmbed("Now Playing", $"[{args.Track.Title}]({args.Track.Uri})\nDuration: {args.Track.Duration}", Color.Blue, true, args.Track.ArtworkUri);
+        Embed embed = EmbedCreator.CreateEmbed("Now Playing", $"[{args.Track.Title}]({args.Track.Uri})\n{args.Track.Author}\nDuration: {args.Track.Duration}", Color.Blue, true, args.Track.ArtworkUri);
         await TextChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
     }
 
