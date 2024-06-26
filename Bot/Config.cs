@@ -1,5 +1,5 @@
 ﻿namespace DMusicBot;
-public class Config
+public static class Config
 {
     public static readonly string BotToken = Environment.GetEnvironmentVariable("MUSIC_BOT_TOKEN") ?? throw new ArgumentNullException(nameof(BotToken));
     public static readonly string LavaLinkConnectionString = Environment.GetEnvironmentVariable("LAVA_LINK_CONNECTION_STRING") ?? throw new ArgumentNullException(nameof(LavaLinkConnectionString));
