@@ -1,0 +1,44 @@
+services:
+  bot:
+    image: bot:latest
+    build:
+      context: .
+      dockerfile: Bot/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - Bot/bot.env
+    depends_on:
+      - db
+      - lavalink
+    networks:
+      - lavalink_net
+      - db_net
+        
+  db:
+    image: mongo
+    restart: unless-stopped
+    env_file:
+      - mongo.env
+    volumes:
+      - ./db-data:/data/db
+    networks:
+      - db_net
+    expose:
+      - 27017
+      
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:latest-alpine
+    restart: unless-stopped
+    volumes:
+      - ./lavalink/application.yml:/opt/Lavalink/application.yml
+      - ./lavalink/plugins:/opt/Lavalink/plugins
+    networks:
+      - lavalink_net
+    expose:
+      - 2333
+        
+networks:
+    lavalink_net:
+      name: lavalink_net
+    db_net:
+      name: db_net

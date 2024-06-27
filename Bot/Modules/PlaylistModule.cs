@@ -45,7 +45,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
         }
         
         PlaylistModel playlist = await _dbService.CreatePlaylistAsync(Context.User.Id,  Context.Guild.Id, name, publicPlaylist).ConfigureAwait(false);
-        await FollowupAsync($"Created {(publicPlaylist ? "public" : "private")} playlist {playlist.Name}.").ConfigureAwait(false);
+        await FollowupAsync($"Created {(publicPlaylist ? "public" : "private")} playlist **{playlist.Name}**.").ConfigureAwait(false);
     }
 
     /// <summary>

@@ -36,7 +36,7 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
             return;
         }
 
-        var lyrics = await audioService.Tracks.GetCurrentTrackLyricsAsync(player).ConfigureAwait(false);
+        var lyrics = await _audioService.Tracks.GetCurrentTrackLyricsAsync(player).ConfigureAwait(false);
 
         if (lyrics is null)
         {
@@ -58,7 +58,7 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
         while (player.CurrentTrack is not null && player.CurrentTrack == currentTrack)
         {
             TimedLyricsLine? nextLine = FindCurrentLine(lyrics, player.Position!.Value.Position);
-            if (currentLine != nextLine && nextLine is not null && nextLine.HasValue && !string.IsNullOrEmpty(nextLine.Value.Line))
+            if (currentLine != nextLine && nextLine.HasValue && !string.IsNullOrEmpty(nextLine.Value.Line))
             {
                 currentLine = nextLine;
                 lyricsParts = SplitIntoChunks(lyrics, player.Position!.Value.Position).Take(10).ToArray();

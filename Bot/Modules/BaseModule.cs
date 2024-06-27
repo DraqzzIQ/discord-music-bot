@@ -30,7 +30,7 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="logger"/> is <see langword="null"/>.
     /// </exception>
-    public BaseModule(IAudioService audioService, ILogger<BaseModule> logger)
+    protected BaseModule(IAudioService audioService, ILogger<BaseModule> logger)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         ArgumentNullException.ThrowIfNull(logger);
