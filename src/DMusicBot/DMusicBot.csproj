@@ -15,17 +15,15 @@
 		<PackageReference Include="Lavalink4NET.Discord.NET" Version="4.0.18" />
 		<PackageReference Include="Lavalink4NET.InactivityTracking" Version="4.0.18" />
 		<PackageReference Include="Lavalink4NET.Integrations.LyricsJava" Version="4.0.18" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
 		<PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
 	
-	<ItemGroup>
-		<ProjectReference Include="..\DMusicBot.Common\DMusicBot.Common.csproj" />
-	</ItemGroup>
-
 	<ItemGroup>
 	  <Folder Include="Attributes\" />
 	  <Folder Include="TypeConverters\" />

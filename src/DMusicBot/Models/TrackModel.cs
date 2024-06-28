@@ -1,4 +1,4 @@
-namespace DMusicBot.Common.Models;
+namespace DMusicBot.Models;
 
 public struct TrackModel
 {

@@ -1,7 +1,7 @@
-using DMusicBot.Common.Models;
+using DMusicBot.Models;
 using MongoDB.Driver;
 
-namespace DMusicBot.Common.Services;
+namespace DMusicBot.Services;
 
 public class MongoDbService : IDbService
 {

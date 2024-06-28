@@ -4,16 +4,17 @@ using Lavalink4NET.Extensions;
 using Lavalink4NET.InactivityTracking.Extensions;
 using Lavalink4NET.InactivityTracking.Trackers.Users;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using DMusicBot;
 using Lavalink4NET;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Discord.Rest;
-using DMusicBot.Common.Services;
+using DMusicBot.Api.EndpointDefinitions;
 using DMusicBot.Services;
+using Microsoft.AspNetCore.Builder;
 
-var builder = new HostApplicationBuilder(args);
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Discord
 builder.Services.AddSingleton<DiscordSocketClient>();
@@ -31,13 +32,14 @@ builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning
 #endif
 
 // Config
-builder.Services.AddSingleton<ConfigService, BotConfigService>();
+builder.Services.AddSingleton<ConfigService>();
 
 // Lavalink
 builder.Services.AddLavalink();
 builder.Services.AddInactivityTracker<UsersInactivityTracker>();
 
-BotConfigService config = builder.Build().Services.GetRequiredService<ConfigService>() as BotConfigService ?? throw new InvalidOperationException("Config service is not of type BotConfigService");
+ConfigService config = builder.Services.BuildServiceProvider().GetRequiredService<ConfigService>() ??
+                       throw new InvalidOperationException("Config service not found");
 builder.Services.ConfigureLavalink(options =>
 {
     options.Passphrase = config.LavaLinkPassword;
@@ -57,6 +59,9 @@ builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
 // Db Service
 builder.Services.AddSingleton<IDbService, MongoDbService>();
 
+// Api
+builder.Services.AddEndpointDefinitions(typeof(IEndpointDefinition));
+
 
 var app = builder.Build();
 
@@ -65,5 +70,10 @@ app.UseLyricsJava();
 
 IAudioService? audioService = app.Services.GetService<IAudioService>();
 AudioServiceEventHandler.RegisterHandlers(audioService!);
+
+
+// Api
+app.UseHttpsRedirection();
+app.UseEndpointDefinitions();
 
 app.Run();

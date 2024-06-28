@@ -1,8 +1,8 @@
 using Discord;
 using Discord.Interactions;
 using DMusicBot.AutocompleteHandlers;
-using DMusicBot.Common.Models;
-using DMusicBot.Common.Services;
+using DMusicBot.Models;
+using DMusicBot.Services;
 using DMusicBot.Extensions;
 using DMusicBot.Util;
 using Lavalink4NET;

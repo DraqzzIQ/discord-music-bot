@@ -1,16 +1,11 @@
-﻿using DMusicBot.Services;
-
-namespace DMusicBot;
-
-using System;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+namespace DMusicBot.Services;
 
 internal sealed class DiscordClientHost : IHostedService
 {
@@ -18,14 +13,14 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DiscordClientHost> _logger;
-    private readonly BotConfigService _config;
+    private readonly ConfigService _config;
 
     public DiscordClientHost(
         DiscordSocketClient discordSocketClient,
         InteractionService interactionService,
         IServiceProvider serviceProvider,
         ILogger<DiscordClientHost> logger,
-        BotConfigService config)
+        ConfigService config)
     {
         ArgumentNullException.ThrowIfNull(discordSocketClient);
         ArgumentNullException.ThrowIfNull(interactionService);
@@ -45,7 +40,7 @@ internal sealed class DiscordClientHost : IHostedService
         _discordSocketClient.InteractionCreated += InteractionCreated;
         _discordSocketClient.Ready += ClientReady;
         _discordSocketClient.Log += LogAsync;
-        // Put bot token here
+        
         await _discordSocketClient
             .LoginAsync(TokenType.Bot, _config.BotToken)
             .ConfigureAwait(false);
@@ -101,10 +96,10 @@ internal sealed class DiscordClientHost : IHostedService
             .ConfigureAwait(false);
     }
 
-    private Task InteractionCreated(SocketInteraction interaction)
+    private Task<IResult> InteractionCreated(SocketInteraction interaction)
     {
         var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
-        return _interactionService!.ExecuteCommandAsync(interactionContext, _serviceProvider);
+        return _interactionService.ExecuteCommandAsync(interactionContext, _serviceProvider);
     }
 
     private async Task ClientReady()
