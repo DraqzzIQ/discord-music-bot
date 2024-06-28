@@ -1,4 +1,6 @@
-﻿namespace DMusicBot;
+﻿using DMusicBot.Services;
+
+namespace DMusicBot;
 
 using System;
 using System.Reflection;
@@ -16,22 +18,26 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DiscordClientHost> _logger;
+    private readonly BotConfigService _config;
 
     public DiscordClientHost(
         DiscordSocketClient discordSocketClient,
         InteractionService interactionService,
         IServiceProvider serviceProvider,
-        ILogger<DiscordClientHost> logger)
+        ILogger<DiscordClientHost> logger,
+        BotConfigService config)
     {
         ArgumentNullException.ThrowIfNull(discordSocketClient);
         ArgumentNullException.ThrowIfNull(interactionService);
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(config);
 
         _discordSocketClient = discordSocketClient;
         _interactionService = interactionService;
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _config = config;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -41,7 +47,7 @@ internal sealed class DiscordClientHost : IHostedService
         _discordSocketClient.Log += LogAsync;
         // Put bot token here
         await _discordSocketClient
-            .LoginAsync(TokenType.Bot, Config.BotToken)
+            .LoginAsync(TokenType.Bot, _config.BotToken)
             .ConfigureAwait(false);
 
         await _discordSocketClient
@@ -113,7 +119,7 @@ internal sealed class DiscordClientHost : IHostedService
         // register commands to guild
 #if DEBUG
         await _interactionService
-            .RegisterCommandsToGuildAsync(Config.DebugGuildId)
+            .RegisterCommandsToGuildAsync(_config.DebugGuildId)
             .ConfigureAwait(false);
 #else
         await _interactionService

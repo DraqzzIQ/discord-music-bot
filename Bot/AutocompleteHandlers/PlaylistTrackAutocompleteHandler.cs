@@ -1,7 +1,6 @@
 using Discord;
 using Discord.Interactions;
-using DMusicBot.Models;
-using DMusicBot.Services;
+using DMusicBot.Common.Services;
 
 namespace DMusicBot.AutocompleteHandlers;
 

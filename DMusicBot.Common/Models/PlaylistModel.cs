@@ -1,6 +1,6 @@
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace DMusicBot.Models;
+namespace DMusicBot.Common.Models;
 
 [BsonIgnoreExtraElements]
 public struct PlaylistModel

@@ -5,10 +5,12 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Bot/DMusicBot.csproj", "./"]
-RUN dotnet restore "DMusicBot.csproj"
-COPY Bot .
-WORKDIR "/src/"
+COPY ["Bot/DMusicBot.csproj", "Bot/"]
+COPY ["../DMusicBot.Common/DMusicBot.Common.csproj", "DMusicBot.Common/DMusicBot.Common.csproj"]
+RUN dotnet restore "Bot/DMusicBot.csproj"
+COPY Bot Bot
+COPY ../DMusicBot.Common DMusicBot.Common
+WORKDIR "/src/Bot"
 RUN dotnet build "DMusicBot.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

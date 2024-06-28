@@ -19,7 +19,11 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-		<PackageReference Include="MongoDB.Driver" Version="2.26.0" />
+		<PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\DMusicBot.Common\DMusicBot.Common.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

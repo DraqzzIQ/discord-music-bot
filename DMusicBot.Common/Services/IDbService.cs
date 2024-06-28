@@ -1,6 +1,6 @@
-using DMusicBot.Models;
+using DMusicBot.Common.Models;
 
-namespace DMusicBot.Services;
+namespace DMusicBot.Common.Services;
 
 public interface IDbService
 {

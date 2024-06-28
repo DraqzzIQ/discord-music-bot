@@ -1,19 +1,16 @@
-using DMusicBot.Models;
+using DMusicBot.Common.Models;
 using MongoDB.Driver;
 
-namespace DMusicBot.Services;
+namespace DMusicBot.Common.Services;
 
 public class MongoDbService : IDbService
 {
-    private readonly string? _connectionString = Config.DbConnectionString;
     private readonly IMongoCollection<PlaylistModel> _playlistCollection;
-    public MongoDbService()
+    public MongoDbService(ConfigService config)
     {
-        if (_connectionString is null)
-        {
-            throw new ArgumentNullException(nameof(_connectionString));
-        }
-        MongoClient client = new(_connectionString);
+        ArgumentNullException.ThrowIfNull(config);
+
+        MongoClient client = new(config.DbConnectionString);
         IMongoDatabase database = client.GetDatabase("music-bot");
         _playlistCollection = database.GetCollection<PlaylistModel>("playlists");
     }

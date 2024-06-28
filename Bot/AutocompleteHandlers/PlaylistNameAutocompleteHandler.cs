@@ -1,7 +1,6 @@
 using Discord;
 using Discord.Interactions;
-using DMusicBot.Services;
-using Lavalink4NET;
+using DMusicBot.Common.Services;
 
 namespace DMusicBot.AutocompleteHandlers;
 

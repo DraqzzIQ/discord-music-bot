@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMusicBot.Common", "DMusicBot.Common.csproj", "{1203909A-4E20-44D0-BD52-1919D771EFCA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1203909A-4E20-44D0-BD52-1919D771EFCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1203909A-4E20-44D0-BD52-1919D771EFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1203909A-4E20-44D0-BD52-1919D771EFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1203909A-4E20-44D0-BD52-1919D771EFCA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

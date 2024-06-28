@@ -10,6 +10,7 @@ using DMusicBot;
 using Lavalink4NET;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Discord.Rest;
+using DMusicBot.Common.Services;
 using DMusicBot.Services;
 
 var builder = new HostApplicationBuilder(args);
@@ -29,14 +30,18 @@ builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug))
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
 #endif
 
+// Config
+builder.Services.AddSingleton<ConfigService, BotConfigService>();
 
 // Lavalink
 builder.Services.AddLavalink();
 builder.Services.AddInactivityTracker<UsersInactivityTracker>();
+
+BotConfigService config = builder.Build().Services.GetRequiredService<ConfigService>() as BotConfigService ?? throw new InvalidOperationException("Config service is not of type BotConfigService");
 builder.Services.ConfigureLavalink(options =>
 {
-    options.Passphrase = Config.LavaLinkPassword;
-    options.BaseAddress = new Uri(Config.LavaLinkConnectionString);
+    options.Passphrase = config.LavaLinkPassword;
+    options.BaseAddress = new Uri(config.LavaLinkConnectionString);
     options.ReadyTimeout = TimeSpan.FromSeconds(10);
     options.HttpClientName = "LavalinkHttpClient";
     options.Label = "DMusicBot";
