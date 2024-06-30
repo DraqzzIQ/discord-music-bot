@@ -2,3 +2,4 @@ mongo.env
 lavalink/application.yml
 lavalink/plugins
 db-data
+frontend.iml
