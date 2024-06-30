@@ -43,11 +43,11 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
             if (player.CurrentItem is null)
             {
                 await player.PlayAsync(tracks.Tracks[0]).ConfigureAwait(false);
-                await player.Queue.InsertRangeAsync(0, tracks.Tracks.Skip(1).Select(t => new TrackQueueItem(t))).ConfigureAwait(false);
+                await player.Queue.AddRangeAsync(tracks.Tracks.Skip(1).Select(t => new TrackQueueItem(t)).ToList()).ConfigureAwait(false);
             }
             else
             {
-                await player.Queue.InsertRangeAsync(0, tracks.Tracks.Select(t => new TrackQueueItem(t))).ConfigureAwait(false);
+                await player.Queue.AddRangeAsync(tracks.Tracks.Select(t => new TrackQueueItem(t)).ToList()).ConfigureAwait(false);
             }
 
             await FollowupAsync($"🔈 Added {tracks.Count} tracks to queue").ConfigureAwait(false);

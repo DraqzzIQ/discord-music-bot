@@ -36,7 +36,7 @@ builder.Services.AddSingleton<ConfigService>();
 
 // Lavalink
 builder.Services.AddLavalink();
-builder.Services.AddInactivityTracker<UsersInactivityTracker>();
+builder.Services.AddInactivityTracking();
 
 ConfigService config = builder.Services.BuildServiceProvider().GetRequiredService<ConfigService>() ??
                        throw new InvalidOperationException("Config service not found");
@@ -52,7 +52,7 @@ builder.Services.ConfigureLavalink(options =>
 builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
 {
     options.Threshold = 1;
-    options.Timeout = TimeSpan.FromSeconds(180);
+    options.Timeout = TimeSpan.FromSeconds(1);
     options.ExcludeBots = true;
 });
 
