@@ -5,9 +5,8 @@ namespace DMusicBot.SignalR.Hubs;
 
 public class BotHub : Hub
 {
-    public async Task GetQueueAsync(IAudioService audioService, ulong guildId)
+    public async Task UpdatePlayerAsync()
     {
-        // var queue = await AudioService.GetQueueAsync(guildId).ConfigureAwait(false);
-        // await Clients.Caller.SendAsync("Queue", queue).ConfigureAwait(false);
+        
     }
 }

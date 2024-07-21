@@ -10,8 +10,8 @@ public class SignalREndpointDefinition : IEndpointDefinition
     {
         app.UseCors("CorsPolicy");
         // Use default files and static files
-        app.UseDefaultFiles();
-        app.UseStaticFiles();
+        // app.UseDefaultFiles();
+        // app.UseStaticFiles();
         app.MapHub<BotHub>("/bot");
     }
 
