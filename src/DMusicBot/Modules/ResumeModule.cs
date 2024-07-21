@@ -13,7 +13,7 @@ public sealed class ResumeModule(IAudioService audioService, ILogger<ResumeModul
     [SlashCommand("resume", description: "Resumes the player.", runMode: RunMode.Async)]
     public async Task ResumeAsync()
     {
-        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
         {

@@ -1,6 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 using DMusicBot.Api.Responses.Bot;
+using DMusicBot.Factories;
 using DMusicBot.RestApi.Requests;
 using DMusicBot.RestApi.Requests.Bot;
 using DMusicBot.Services;
@@ -55,36 +56,38 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         return Results.Ok($"GuildId: {request.GuildId} UserId: {request.UserId}");
     }
-    
+
     [Authorize]
     private async Task<IResult?> UpdatePositionAsync([AsParameters] UpdatePlayerPositionRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
-        
-        if(player.CurrentTrack is null)
+
+        if (player.CurrentTrack is null)
             return Results.NotFound("No track playing");
-        
+
         TimeSpan position = TimeSpan.FromSeconds(request.PositionInSeconds);
 
-        await player.SeekAsync(position);
-        
-        await SendMessageWithUserPrefixAsync($"seeked to {TimeSpanFormatter.FormatDuration(position)}", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await player.SeekAsync(position).ConfigureAwait(false);
+
+        await SendMessageWithUserPrefixAsync($"seeked to {TimeSpanFormatter.FormatDuration(position)}", request.GuildId, request.UserId, request.DbService,
+            request.DiscordSocketClient).ConfigureAwait(false);
 
         return Results.Ok();
     }
-    
+
     [Authorize]
     private async Task<IResult?> LeaveAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
-        await player.DisconnectAsync();
-        
-        await SendMessageWithUserPrefixAsync("disconnected the bot", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await player.DisconnectAsync().ConfigureAwait(false);
+
+        await SendMessageWithUserPrefixAsync("disconnected the bot", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -99,16 +102,17 @@ public class BotEndpointDefinition : IEndpointDefinition
         IGuildUser? user = guild.GetUser(request.UserId);
         if (user is null)
             return Results.NotFound("User not found");
-        
-        if(user.VoiceChannel is null)
+
+        if (user.VoiceChannel is null)
             return Results.NotFound("User not in a voice channel");
 
-        if(user.VoiceChannel.GuildId != request.GuildId)
+        if (user.VoiceChannel.GuildId != request.GuildId)
             return Results.NotFound("User not in a voice channel on current guild");
 
-        await request.AudioService.Players.JoinAsync(request.GuildId, user.VoiceChannel.Id, PlayerFactory.Queued);
-        
-        await SendMessageWithUserPrefixAsync("joined the bot", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await request.AudioService.Players.JoinAsync(request.GuildId, user.VoiceChannel.Id, CustomQueuedPlayerFactory.CustomQueued).ConfigureAwait(false);
+
+        await SendMessageWithUserPrefixAsync("joined the bot", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -116,7 +120,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> PlayTrackAsync([AsParameters] PlayTrackRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -127,11 +131,13 @@ public class BotEndpointDefinition : IEndpointDefinition
         if (request.Tracks.Length == 1)
         {
             LavalinkTrack track = request.Tracks[0];
-            
-            Embed embed = EmbedCreator.CreateEmbed($"Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
-            await SendEmbedMessageWithUserPrefixAsync("added to queue", embed, request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
-            
-            await player.PlayAsync(track);
+
+            Embed embed = EmbedCreator.CreateEmbed($"Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue,
+                true, track.ArtworkUri);
+            await SendEmbedMessageWithUserPrefixAsync("added to queue", embed, request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+                .ConfigureAwait(false);
+
+            await player.PlayAsync(track).ConfigureAwait(false);
 
             return Results.Ok();
         }
@@ -139,15 +145,16 @@ public class BotEndpointDefinition : IEndpointDefinition
         // Playlist
         if (player.CurrentTrack is null)
         {
-            await player.PlayAsync(request.Tracks[0]);
-            await player.Queue.AddRangeAsync(request.Tracks.Skip(1).Select(t => new TrackQueueItem(t)).ToList());
+            await player.PlayAsync(request.Tracks[0]).ConfigureAwait(false);
+            await player.Queue.AddRangeAsync(request.Tracks.Skip(1).Select(t => new TrackQueueItem(t)).ToList()).ConfigureAwait(false);
         }
         else
         {
-            await player.Queue.AddRangeAsync(request.Tracks.Select(t => new TrackQueueItem(t)).ToList());
+            await player.Queue.AddRangeAsync(request.Tracks.Select(t => new TrackQueueItem(t)).ToList()).ConfigureAwait(false);
         }
-        
-        await SendMessageWithUserPrefixAsync($"added {request.Tracks.Length} tracks to the queue", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+
+        await SendMessageWithUserPrefixAsync($"added {request.Tracks.Length} tracks to the queue", request.GuildId, request.UserId, request.DbService,
+            request.DiscordSocketClient).ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -155,13 +162,14 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> ShuffleQueueAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
-        await player.Queue.ShuffleAsync();
+        await player.Queue.ShuffleAsync().ConfigureAwait(false);
 
-        await SendMessageWithUserPrefixAsync("shuffled the queue.", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await SendMessageWithUserPrefixAsync("shuffled the queue.", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -169,13 +177,14 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> PauseAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
-        await player.PauseAsync();
+        await player.PauseAsync().ConfigureAwait(false);
 
-        await SendMessageWithUserPrefixAsync("paused playback", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await SendMessageWithUserPrefixAsync("paused playback", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -183,13 +192,14 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> StopAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
-        await player.StopAsync();
-        
-        await SendMessageWithUserPrefixAsync("stopped playback", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await player.StopAsync().ConfigureAwait(false);
+
+        await SendMessageWithUserPrefixAsync("stopped playback", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -197,28 +207,30 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> ResumeAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
-        await player.ResumeAsync();
+        await player.ResumeAsync().ConfigureAwait(false);
 
-        await SendMessageWithUserPrefixAsync("resumed playback", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
-        
+        await SendMessageWithUserPrefixAsync("resumed playback", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
+
         return Results.Ok();
     }
 
     [Authorize]
     private async Task<IResult?> RewindTrackAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
 
-        await player.SeekAsync(TimeSpan.Zero);
-        
-        await SendMessageWithUserPrefixAsync("rewound the track", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await player.SeekAsync(TimeSpan.Zero).ConfigureAwait(false);
+
+        await SendMessageWithUserPrefixAsync("rewound the track", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -226,14 +238,15 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> SkipTrackAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
 
-        await SendMessageWithUserPrefixAsync("skipped the track", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await SendMessageWithUserPrefixAsync("skipped the track", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
-        await player.SkipAsync();
+        await player.SkipAsync().ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -241,15 +254,16 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> UpdateQueueAsync([AsParameters] UpdateQueueRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
 
-        await player.Queue.ClearAsync();
-        await player.Queue.AddRangeAsync(request.Queue);
-        
-        await SendMessageWithUserPrefixAsync("updated the queue", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        await player.Queue.ClearAsync().ConfigureAwait(false);
+        await player.Queue.AddRangeAsync(request.Queue).ConfigureAwait(false);
+
+        await SendMessageWithUserPrefixAsync("updated the queue", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient)
+            .ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -257,14 +271,15 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> UpdateRepeatModeAsync([AsParameters] UpdateRepeatModeRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
 
         player.RepeatMode = request.RepeatMode;
-        
-        await SendMessageWithUserPrefixAsync($"set repeat mode to {request.RepeatMode}", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+
+        await SendMessageWithUserPrefixAsync($"set repeat mode to {request.RepeatMode}", request.GuildId, request.UserId, request.DbService,
+            request.DiscordSocketClient).ConfigureAwait(false);
 
         return Results.Ok();
     }
@@ -274,15 +289,15 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         return Results.Conflict("Disabled");
 
-        // QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        // QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         // if (player is null)
         // {
         //     return Results.NotFound("Player not found");
         // }
         //
-        // await player.SetVolumeAsync(request.Volume / 100f);
+        // await player.SetVolumeAsync(request.Volume / 100f).ConfigureAwait(false);
         //
-        // await SendMessageWithUserPrefixAsync($"set volume to {request.Volume}", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+        // await SendMessageWithUserPrefixAsync($"set volume to {request.Volume}", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient).ConfigureAwait(false);
         //
         // return Results.Ok();
     }
@@ -290,7 +305,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> GetLyricsAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -300,7 +315,7 @@ public class BotEndpointDefinition : IEndpointDefinition
             return Results.NotFound();
         }
 
-        Lyrics? lyrics = await request.AudioService.Tracks.GetCurrentTrackLyricsAsync(player);
+        Lyrics? lyrics = await request.AudioService.Tracks.GetCurrentTrackLyricsAsync(player).ConfigureAwait(false);
         if (lyrics is null)
         {
             return Results.NotFound("Player not found");
@@ -317,7 +332,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> GetQueueAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -333,7 +348,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     [Authorize]
     private async Task<IResult?> GetStatusAsync([AsParameters] BaseRequest request)
     {
-        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -352,7 +367,7 @@ public class BotEndpointDefinition : IEndpointDefinition
 
     private async Task<QueuedLavalinkPlayer?> GetPlayerAsync(ulong guildId, IAudioService audioService)
     {
-        var player = await audioService.Players.GetPlayerAsync<QueuedLavalinkPlayer>(guildId);
+        var player = await audioService.Players.GetPlayerAsync<QueuedLavalinkPlayer>(guildId).ConfigureAwait(false);
         if (player is null || player.State == PlayerState.Destroyed)
         {
             return null;
@@ -360,24 +375,26 @@ public class BotEndpointDefinition : IEndpointDefinition
 
         return player;
     }
-    
-    private async Task SendMessageWithUserPrefixAsync(string message, ulong guildId, ulong userId, IDbService dbService, DiscordSocketClient discordSocketClient)
+
+    private async Task SendMessageWithUserPrefixAsync(string message, ulong guildId, ulong userId, IDbService dbService,
+        DiscordSocketClient discordSocketClient)
     {
         SocketUser user = discordSocketClient.GetUser(userId);
-        ITextChannel? channel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, guildId);
+        ITextChannel? channel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, guildId).ConfigureAwait(false);
         if (channel is null)
             return;
-        
-        await channel.SendMessageAsync($"<@{user.Id}> {message}.", allowedMentions: AllowedMentions.None);
+
+        await channel.SendMessageAsync($"<@{user.Id}> {message}.", allowedMentions: AllowedMentions.None).ConfigureAwait(false);
     }
-    
-    private async Task SendEmbedMessageWithUserPrefixAsync(string message, Embed embed, ulong guildId, ulong userId, IDbService dbService, DiscordSocketClient discordSocketClient)
+
+    private async Task SendEmbedMessageWithUserPrefixAsync(string message, Embed embed, ulong guildId, ulong userId, IDbService dbService,
+        DiscordSocketClient discordSocketClient)
     {
         SocketUser user = discordSocketClient.GetUser(userId);
-        ITextChannel? channel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, guildId);
+        ITextChannel? channel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, guildId).ConfigureAwait(false);
         if (channel is null)
             return;
-        
-        await channel.SendMessageAsync($"<@{user.Id}> {message}.", embed: embed, allowedMentions: AllowedMentions.None);
+
+        await channel.SendMessageAsync($"<@{user.Id}> {message}.", embed: embed, allowedMentions: AllowedMentions.None).ConfigureAwait(false);
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Discord.Rest;
-using DMusicBot.AudioEventHandlers;
+using DMusicBot.Audio;
 using DMusicBot.Extensions;
 using DMusicBot.RestApi.Auth;
 using DMusicBot.RestApi.EndpointDefinitions;

@@ -12,7 +12,7 @@ public sealed class StopModule(IAudioService audioService, ILogger<StopModule> l
     [SlashCommand("stop", description: "Stops the current track", runMode: RunMode.Async)]
     public async Task Stop()
     {
-        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
         {

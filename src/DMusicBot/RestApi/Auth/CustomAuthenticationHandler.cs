@@ -37,7 +37,7 @@ public class CustomAuthenticationHandler(
             return AuthenticateResult.Fail("Invalid token");
 
 
-        AuthModel? auth = await _dbService.GetAuthTokenAsync(token);
+        AuthModel? auth = await _dbService.GetAuthTokenAsync(token).ConfigureAwait(false);
         if (auth is null)
             return AuthenticateResult.Fail("Unauthorized");
 

@@ -16,7 +16,7 @@ public class JoinModule(IAudioService audioService, ILogger<LoopModule> logger) 
     {
         await DeferAsync().ConfigureAwait(false);
         
-        var player = await GetPlayerAsync(connectToVoiceChannel: true);
+        var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
         if(player is null)
         {
             return;

@@ -10,8 +10,8 @@ public static class GuildChannelUtil
     public static async Task<ITextChannel?> GetBotGuildChannel(IDbService dbService, DiscordSocketClient discordSocketClient, ulong guildId)
     {
         ITextChannel? textChannel;
-        BotChannelModel? botChannelModel = await dbService.GetBotChannelAsync(guildId);
-        if (botChannelModel is null || (textChannel = await discordSocketClient.GetChannelAsync(botChannelModel.Value.ChannelId) as ITextChannel) is null)
+        BotChannelModel? botChannelModel = await dbService.GetBotChannelAsync(guildId).ConfigureAwait(false);
+        if (botChannelModel is null || (textChannel = await discordSocketClient.GetChannelAsync(botChannelModel.Value.ChannelId).ConfigureAwait(false) as ITextChannel) is null)
         {
             SocketGuild? guild = discordSocketClient.GetGuild(guildId);
             textChannel = guild?.SystemChannel ?? guild?.TextChannels.FirstOrDefault();

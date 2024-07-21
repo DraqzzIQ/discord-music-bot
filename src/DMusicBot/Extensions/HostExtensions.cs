@@ -1,4 +1,4 @@
-using DMusicBot.AudioEventHandlers;
+using DMusicBot.Audio;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 

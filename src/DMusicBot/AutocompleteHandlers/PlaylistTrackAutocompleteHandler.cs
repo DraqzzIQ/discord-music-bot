@@ -19,13 +19,13 @@ public class PlaylistTrackAutocompleteHandler (IDbService dbService) : Autocompl
             return AutocompletionResult.FromSuccess();
         }
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(context.Guild.Id, playlistName);
+        bool playlistExists = await _dbService.PlaylistExistsAsync(context.Guild.Id, playlistName).ConfigureAwait(false);
         if (!playlistExists)
         {
             return AutocompletionResult.FromSuccess();
         }
         
-        (await _dbService.FindMatchingTracksForPlaylistAsync(context.Guild.Id, playlistName,autocompleteInteraction.Data.Current.Value as string ?? ""))
+        (await _dbService.FindMatchingTracksForPlaylistAsync(context.Guild.Id, playlistName,autocompleteInteraction.Data.Current.Value as string ?? "").ConfigureAwait(false))
             .ForEach(track => { results.Add(new AutocompleteResult(track.Title, track.Title)); });
         
         return AutocompletionResult.FromSuccess(results.Take(25));

@@ -1,4 +1,7 @@
-﻿using Lavalink4NET.Players.Queued;
+﻿using DMusicBot.Audio;
+using DMusicBot.Factories;
+using Lavalink4NET.Clients;
+using Lavalink4NET.Players.Queued;
 
 namespace DMusicBot.Modules;
 
@@ -48,13 +51,13 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
     /// <returns>
     ///     a task that represents the asynchronous operation. The task result is the lavalink player.
     /// </returns>
-    protected async ValueTask<QueuedLavalinkPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true)
+    protected async ValueTask<SignalRPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true)
     {
         var retrieveOptions = new PlayerRetrieveOptions(
             ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
 
         var result = await _audioService.Players
-            .RetrieveAsync(Context, playerFactory: PlayerFactory.Queued, retrieveOptions)
+            .RetrieveAsync(Context, playerFactory: CustomQueuedPlayerFactory.CustomQueued, retrieveOptions)
             .ConfigureAwait(false);
 
         if (!result.IsSuccess)

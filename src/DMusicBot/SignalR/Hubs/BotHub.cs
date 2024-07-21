@@ -7,7 +7,7 @@ public class BotHub : Hub
 {
     public async Task GetQueueAsync(IAudioService audioService, ulong guildId)
     {
-        // var queue = await AudioService.GetQueueAsync(guildId);
-        // await Clients.Caller.SendAsync("Queue", queue);
+        // var queue = await AudioService.GetQueueAsync(guildId).ConfigureAwait(false);
+        // await Clients.Caller.SendAsync("Queue", queue).ConfigureAwait(false);
     }
 }

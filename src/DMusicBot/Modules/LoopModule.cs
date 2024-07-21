@@ -13,7 +13,7 @@ public sealed class LoopModule(IAudioService audioService, ILogger<LoopModule> l
     [SlashCommand("loop", description: "Loops the current track.", runMode: RunMode.Async)]
     public async Task LoopAsync()
     {
-        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
         {

@@ -13,7 +13,7 @@ public sealed class PauseModule(IAudioService audioService, ILogger<PauseModule>
     [SlashCommand("pause", description: "Pauses the player.", runMode: RunMode.Async)]
     public async Task PauseAsync()
     {
-        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
         {

@@ -19,7 +19,7 @@ public sealed class ShuffleModule(IAudioService audioService, ILogger<ShuffleMod
             return;
         }
 
-        await player.Queue.ShuffleAsync();
+        await player.Queue.ShuffleAsync().ConfigureAwait(false);
 
         await RespondAsync($"Queue shuffled").ConfigureAwait(false);
     }

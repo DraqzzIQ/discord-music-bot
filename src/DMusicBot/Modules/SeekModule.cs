@@ -15,7 +15,7 @@ public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> l
     {
         TimeSpan position = TimeSpan.FromSeconds(seconds);
 
-        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
         {

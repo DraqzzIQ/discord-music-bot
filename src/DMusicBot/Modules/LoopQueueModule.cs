@@ -13,7 +13,7 @@ public sealed class LoopQueueModule(IAudioService audioService, ILogger<LoopQueu
     [SlashCommand("loop_queue", description: "Loops the queue.", runMode: RunMode.Async)]
     public async Task LoopQueueAsync()
     {
-        var player = await GetPlayerAsync(connectToVoiceChannel: false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
 
         if (player is null)
         {

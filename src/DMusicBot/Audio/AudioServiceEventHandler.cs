@@ -1,13 +1,12 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using DMusicBot.Models;
 using DMusicBot.Services;
 using DMusicBot.Util;
 using Lavalink4NET;
 using Lavalink4NET.Events.Players;
 using Lavalink4NET.Players.Queued;
 
-namespace DMusicBot.AudioEventHandlers;
+namespace DMusicBot.Audio;
 
 public class AudioServiceEventHandler(IDbService dbService, DiscordSocketClient discordSocketClient, IAudioService audioService)
 {
@@ -17,12 +16,13 @@ public class AudioServiceEventHandler(IDbService dbService, DiscordSocketClient 
 
     private async Task TrackStartedHandler(object sender, TrackStartedEventArgs args)
     {
-        ITextChannel? textChannel = await GuildChannelUtil.GetBotGuildChannel(_dbService, _discordSocketClient, args.Player.GuildId);
+        ITextChannel? textChannel = await GuildChannelUtil.GetBotGuildChannel(_dbService, _discordSocketClient, args.Player.GuildId)
+            .ConfigureAwait(false);
         
         if (textChannel is null)
             return;
 
-        if (args.Player is QueuedLavalinkPlayer { RepeatMode: TrackRepeatMode.Track })
+        if (args.Player is SignalRPlayer { RepeatMode: TrackRepeatMode.Track })
             return;
 
         Embed embed = EmbedCreator.CreateEmbed("Now Playing", $"[{args.Track.Title}]({args.Track.Uri})\n{args.Track.Author}\nDuration: {args.Track.Duration}",

@@ -13,7 +13,7 @@ public class PlaylistNameAutocompleteHandler(IDbService dbService) : Autocomplet
     {
         List<AutocompleteResult> results = [];
 
-        (await _dbService.FindMatchingPlaylistsAsync(context.Guild.Id, autocompleteInteraction.Data.Current.Value as string ?? ""))
+        (await _dbService.FindMatchingPlaylistsAsync(context.Guild.Id, autocompleteInteraction.Data.Current.Value as string ?? "").ConfigureAwait(false))
             .ForEach(playlist => { results.Add(new AutocompleteResult(playlist.Name, playlist.Name)); });
 
         return AutocompletionResult.FromSuccess(results.Take(25));

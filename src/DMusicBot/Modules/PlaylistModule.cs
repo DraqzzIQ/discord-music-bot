@@ -31,7 +31,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name);
+        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** already exists.").ConfigureAwait(false);
@@ -240,9 +240,9 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        List<PlaylistModel> playlists = await _dbService.GetPlaylistsAsync(Context.Guild.Id);
+        List<PlaylistModel> playlists = await _dbService.GetPlaylistsAsync(Context.Guild.Id).ConfigureAwait(false);
         Embed[] embeds = EmbedCreator.CreateEmbeds("Playlists", playlists.Select(p => $"{p.Name} - {p.Tracks.Count}").ToList());
-        await FollowupAsync(embeds: embeds);
+        await FollowupAsync(embeds: embeds).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
                 ArtworkUri = t.ArtworkUri,
                 Duration = t.Duration,
                 SerializationString = t.ToString()
-            }).ToList());
+            }).ToList()).ConfigureAwait(false);
 
             await FollowupAsync($"🔈 Added {tracks.Count} tracks to **{name}**").ConfigureAwait(false);
             return;
