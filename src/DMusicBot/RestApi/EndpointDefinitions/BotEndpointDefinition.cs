@@ -1,7 +1,6 @@
 using Discord;
 using Discord.WebSocket;
 using DMusicBot.Api.Responses.Bot;
-using DMusicBot.Models;
 using DMusicBot.RestApi.Requests;
 using DMusicBot.RestApi.Requests.Bot;
 using DMusicBot.Services;
@@ -43,6 +42,7 @@ public class BotEndpointDefinition : IEndpointDefinition
         app.MapPost("/api/bot/play", PlayTrackAsync);
         app.MapPost("/api/bot/join", JoinAsync);
         app.MapPost("/api/bot/leave", LeaveAsync);
+        app.MapPost("/api/bot/position", UpdatePositionAsync);
     }
 
     public void DefineServices(IServiceCollection services)
@@ -57,13 +57,30 @@ public class BotEndpointDefinition : IEndpointDefinition
     }
     
     [Authorize]
+    private async Task<IResult?> UpdatePositionAsync([AsParameters] UpdatePlayerPositionRequest request)
+    {
+        QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
+        if (player is null)
+            return Results.NotFound("Player not found");
+        
+        if(player.CurrentTrack is null)
+            return Results.NotFound("No track playing");
+        
+        TimeSpan position = TimeSpan.FromSeconds(request.PositionInSeconds);
+
+        await player.SeekAsync(position);
+        
+        await SendMessageWithUserPrefixAsync($"seeked to {TimeSpanFormatter.FormatDuration(position)}", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
+
+        return Results.Ok();
+    }
+    
+    [Authorize]
     private async Task<IResult?> LeaveAsync([AsParameters] BaseRequest request)
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
 
         await player.DisconnectAsync();
         
@@ -101,14 +118,10 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
 
         if (request.Tracks.Length == 0)
-        {
             return Results.BadRequest("No tracks provided");
-        }
 
         // Single track
         if (request.Tracks.Length == 1)
@@ -144,9 +157,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
 
         await player.Queue.ShuffleAsync();
 
@@ -160,9 +171,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
 
         await player.PauseAsync();
 
@@ -176,9 +185,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
 
         await player.StopAsync();
         
@@ -192,9 +199,7 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
 
         await player.ResumeAsync();
 
@@ -208,9 +213,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         await player.SeekAsync(TimeSpan.Zero);
         
@@ -224,9 +228,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         await SendMessageWithUserPrefixAsync("skipped the track", request.GuildId, request.UserId, request.DbService, request.DiscordSocketClient);
 
@@ -240,9 +243,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         await player.Queue.ClearAsync();
         await player.Queue.AddRangeAsync(request.Queue);
@@ -257,9 +259,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         player.RepeatMode = request.RepeatMode;
         
@@ -291,9 +292,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         if (player.CurrentTrack is null)
         {
@@ -319,9 +319,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         QueueResponse response = new()
         {
@@ -336,9 +335,8 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         QueuedLavalinkPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService);
         if (player is null)
-        {
             return Results.NotFound("Player not found");
-        }
+
 
         StatusResponse response = new()
         {
