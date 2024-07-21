@@ -5,12 +5,14 @@ using Lavalink4NET.InactivityTracking.Extensions;
 using Lavalink4NET.InactivityTracking.Trackers.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using DMusicBot;
-using Lavalink4NET;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Discord.Rest;
-using DMusicBot.Api.EndpointDefinitions;
+using DMusicBot.AudioEventHandlers;
+using DMusicBot.Extensions;
+using DMusicBot.RestApi.Auth;
+using DMusicBot.RestApi.EndpointDefinitions;
 using DMusicBot.Services;
+using Lavalink4NET.InactivityTracking.Trackers.Idle;
 using Microsoft.AspNetCore.Builder;
 
 
@@ -28,7 +30,7 @@ builder.Services.AddHostedService<DiscordClientHost>();
 #if DEBUG
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug));
 #else
-builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
+builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
 #endif
 
 // Config
@@ -36,7 +38,6 @@ builder.Services.AddSingleton<ConfigService>();
 
 // Lavalink
 builder.Services.AddLavalink();
-builder.Services.AddInactivityTracking();
 
 ConfigService config = builder.Services.BuildServiceProvider().GetRequiredService<ConfigService>() ??
                        throw new InvalidOperationException("Config service not found");
@@ -49,31 +50,58 @@ builder.Services.ConfigureLavalink(options =>
     options.Label = "DMusicBot";
 });
 
+// Inactivity Tracking
+builder.Services.AddInactivityTracking();
+builder.Services.AddInactivityTracker<UsersInactivityTracker>();
+builder.Services.AddInactivityTracker<IdleInactivityTracker>();
+
+builder.Services.ConfigureInactivityTracking(options =>
+{
+});
+
 builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
 {
     options.Threshold = 1;
-    options.Timeout = TimeSpan.FromSeconds(1);
+    options.Timeout = TimeSpan.FromSeconds(180);
     options.ExcludeBots = true;
 });
 
-// Db Service
-builder.Services.AddSingleton<IDbService, MongoDbService>();
+builder.Services.Configure<IdleInactivityTrackerOptions>(options =>
+{
+    options.Timeout = TimeSpan.FromSeconds(300);
+});
+
+// Audio Service Event Handler
+builder.Services.AddSingleton<AudioServiceEventHandler>();
 
 // Api
 builder.Services.AddEndpointDefinitions(typeof(IEndpointDefinition));
+builder.Services.AddSingleton(TimeProvider.System);
 
+// Auth
+builder.Services.AddAuthentication
+        (CustomAuthenticationSchemeOptions.DefaultScheme)
+    .AddScheme<CustomAuthenticationSchemeOptions, CustomAuthenticationHandler>
+    (CustomAuthenticationSchemeOptions.DefaultScheme,
+        options => { });
+
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
 // Lyrics
 app.UseLyricsJava();
 
-IAudioService? audioService = app.Services.GetService<IAudioService>();
-AudioServiceEventHandler.RegisterHandlers(audioService!);
-
-
 // Api
 app.UseHttpsRedirection();
 app.UseEndpointDefinitions();
+
+// Auth
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Audio Event Handlers
+app.UseAudioEventHandlers();
 
 app.Run();

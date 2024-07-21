@@ -6,6 +6,9 @@ namespace DMusicBot.Services;
 public class MongoDbService : IDbService
 {
     private readonly IMongoCollection<PlaylistModel> _playlistCollection;
+    private readonly IMongoCollection<AuthModel> _authCollection;
+    private readonly IMongoCollection<BotChannelModel> _botChannelCollection;
+
     public MongoDbService(ConfigService config)
     {
         ArgumentNullException.ThrowIfNull(config);
@@ -13,24 +16,26 @@ public class MongoDbService : IDbService
         MongoClient client = new(config.DbConnectionString);
         IMongoDatabase database = client.GetDatabase("music-bot");
         _playlistCollection = database.GetCollection<PlaylistModel>("playlists");
+        _authCollection = database.GetCollection<AuthModel>("auth");
+        _botChannelCollection = database.GetCollection<BotChannelModel>("bot-channels");
     }
-    
+
     public async Task<bool> PlaylistExistsAsync(ulong guildId, string name)
     {
         return await _playlistCollection.Find(p => p.GuildId == guildId && p.Name == name).AnyAsync();
     }
-    
+
     public async Task<bool> TrackExistsInPlaylistAsync(ulong guildId, string playlistName, string trackName)
     {
         PlaylistModel playlist = await GetPlaylistAsync(guildId, playlistName);
         return playlist.Tracks.Any(t => t.Title == trackName);
     }
-    
+
     public async Task<PlaylistModel> GetPlaylistAsync(ulong guildId, string name)
     {
         return await _playlistCollection.Find(p => p.GuildId == guildId && p.Name == name).FirstOrDefaultAsync();
     }
-    
+
     public async Task<PlaylistModel> CreatePlaylistAsync(ulong userId, ulong guildId, string name, bool publicPlaylist)
     {
         PlaylistModel playlist = new()
@@ -44,7 +49,7 @@ public class MongoDbService : IDbService
         await _playlistCollection.InsertOneAsync(playlist);
         return playlist;
     }
-    
+
     public async Task DeletePlaylistAsync(ulong guildId, string name)
     {
         await _playlistCollection.DeleteOneAsync(p => p.GuildId == guildId && p.Name == name);
@@ -54,45 +59,77 @@ public class MongoDbService : IDbService
     {
         await _playlistCollection.DeleteOneAsync(p => p.GuildId == playlist.GuildId && p.Name == playlist.Name);
     }
-    
+
     public async Task AddTrackToPlaylistAsync(ulong guildId, string name, TrackModel track)
     {
         await _playlistCollection.UpdateOneAsync(p => p.GuildId == guildId && p.Name == name, Builders<PlaylistModel>.Update.Push(p => p.Tracks, track));
     }
-    
+
     public async Task AddTracksToPlaylistAsync(ulong guildId, string name, IEnumerable<TrackModel> tracks)
     {
         await _playlistCollection.UpdateOneAsync(p => p.GuildId == guildId && p.Name == name, Builders<PlaylistModel>.Update.PushEach(p => p.Tracks, tracks));
     }
-    
+
     public async Task RemoveTrackFromPlaylistAsync(ulong guildId, string playlistName, string trackName)
     {
-        await _playlistCollection.UpdateOneAsync(p => p.GuildId == guildId && p.Name == playlistName, Builders<PlaylistModel>.Update.PullFilter(p => p.Tracks, s => s.Title == trackName));
+        await _playlistCollection.UpdateOneAsync(p => p.GuildId == guildId && p.Name == playlistName,
+            Builders<PlaylistModel>.Update.PullFilter(p => p.Tracks, s => s.Title == trackName));
     }
-    
+
     public async Task<List<PlaylistModel>> GetPlaylistsAsync(ulong guildId)
     {
         return await _playlistCollection.Find(p => p.GuildId == guildId).ToListAsync();
     }
-    
+
     public async Task SetPlaylistPublicAsync(ulong guildId, string name, bool isPublic)
     {
         await _playlistCollection.UpdateOneAsync(p => p.GuildId == guildId && p.Name == name, Builders<PlaylistModel>.Update.Set(p => p.IsPublic, isPublic));
     }
-    
+
     public async Task UpdatePlaylistAsync(PlaylistModel playlist)
     {
         await _playlistCollection.ReplaceOneAsync(p => p.GuildId == playlist.GuildId && p.Name == playlist.Name, playlist);
     }
-    
+
     public async Task<List<PlaylistModel>> FindMatchingPlaylistsAsync(ulong guildId, string query)
     {
         return await _playlistCollection.Find(p => p.GuildId == guildId && p.Name.ToLower().Contains(query.ToLower())).ToListAsync();
     }
-    
+
     public async Task<List<TrackModel>> FindMatchingTracksForPlaylistAsync(ulong guildId, string playlistName, string query)
     {
         PlaylistModel playlist = await GetPlaylistAsync(guildId, playlistName);
         return playlist.Tracks.Where(t => t.Title.ToLower().Contains(query.ToLower())).ToList();
+    }
+
+    public async Task RemoveAllMatchingAuthTokensAsync(AuthModel authModel)
+    {
+        await _authCollection.DeleteManyAsync(a => a.UserId == authModel.UserId && a.GuildId == authModel.GuildId);
+    }
+
+    public async Task AddAuthTokenAsync(AuthModel authModel)
+    {
+        await _authCollection.InsertOneAsync(authModel);
+    }
+
+    public async Task<AuthModel?> GetAuthTokenAsync(Guid token)
+    {
+        if (!await _authCollection.Find(a => a.Token == token).AnyAsync())
+            return null;
+
+        return await _authCollection.Find(a => a.Token == token).FirstOrDefaultAsync();
+    }
+    
+    public async Task SetBotChannelAsync(BotChannelModel botChannel)
+    {
+        await _botChannelCollection.ReplaceOneAsync(b => b.GuildId == botChannel.GuildId, botChannel, new ReplaceOptions { IsUpsert = true });
+    }
+    
+    public async Task<BotChannelModel?> GetBotChannelAsync(ulong guildId)
+    {
+        if (!await _botChannelCollection.Find(b => b.GuildId == guildId).AnyAsync())
+            return null;
+        
+        return await _botChannelCollection.Find(b => b.GuildId == guildId).FirstOrDefaultAsync();
     }
 }

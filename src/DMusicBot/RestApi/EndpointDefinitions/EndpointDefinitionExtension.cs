@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DMusicBot.Api.EndpointDefinitions;
+namespace DMusicBot.RestApi.EndpointDefinitions;
 
 public static class EndpointDefinitionExtension
 {

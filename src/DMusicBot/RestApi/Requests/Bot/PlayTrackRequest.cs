@@ -1,7 +1,7 @@
 using Lavalink4NET.Tracks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DMusicBot.Api.Requests.Bot;
+namespace DMusicBot.RestApi.Requests.Bot;
 
 public class PlayTrackRequest : BaseRequest
 {

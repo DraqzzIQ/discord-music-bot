@@ -19,9 +19,6 @@ public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModul
     {
         await DeferAsync().ConfigureAwait(false);
         
-        // Set the text channel for the event handler
-        AudioServiceEventHandler.TextChannel = Context.Channel;
-
         var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
 
         if (player is null)

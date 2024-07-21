@@ -1,10 +1,11 @@
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace DMusicBot.Models;
 
-[BsonIgnoreExtraElements]
 public struct PlaylistModel
 {
+    public ObjectId Id { get; set; }
     public string Name { get; set; }
     public ulong OwnerId { get; set; }
     public ulong GuildId { get; set; }

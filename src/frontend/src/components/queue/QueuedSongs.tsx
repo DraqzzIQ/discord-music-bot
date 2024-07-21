@@ -1,8 +1,16 @@
+import React from "react";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import QueuedSongSkeleton from "@/components/sceletons/QueuedSongSkeleton";
+
 const QueuedSongs: React.FC = () => {
     return (
-        <div className="w-32 border-l border-gray-200 p-4 overflow-y-auto">
-            Queued Songs
-        </div>
+        <ScrollArea className="w-72 border-l-2 p-4 overflow-y-auto mt-2">
+            <div className="space-y-2">
+                {Array.from({length: 30}, (_, index) => (
+                    <QueuedSongSkeleton key={index}/>
+                ))}
+            </div>
+        </ScrollArea>
     );
 };
 

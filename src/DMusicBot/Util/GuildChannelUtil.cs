@@ -1,0 +1,22 @@
+using Discord;
+using Discord.WebSocket;
+using DMusicBot.Models;
+using DMusicBot.Services;
+
+namespace DMusicBot.Util;
+
+public static class GuildChannelUtil
+{
+    public static async Task<ITextChannel?> GetBotGuildChannel(IDbService dbService, DiscordSocketClient discordSocketClient, ulong guildId)
+    {
+        ITextChannel? textChannel;
+        BotChannelModel? botChannelModel = await dbService.GetBotChannelAsync(guildId);
+        if (botChannelModel is null || (textChannel = await discordSocketClient.GetChannelAsync(botChannelModel.Value.ChannelId) as ITextChannel) is null)
+        {
+            SocketGuild? guild = discordSocketClient.GetGuild(guildId);
+            textChannel = guild?.SystemChannel ?? guild?.TextChannels.FirstOrDefault();
+        }
+
+        return textChannel;
+    }
+}
