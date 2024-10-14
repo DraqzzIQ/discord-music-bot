@@ -2,13 +2,14 @@
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 using Discord;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using DMusicBot.Util;
-using System.Text;
-using Lavalink4NET.Players;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
 
-public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule> logger) : BaseModule(audioService, logger)
+public sealed class QueueModule(IAudioService audioService, ILogger<QueueModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Displays the queue asynchronously.

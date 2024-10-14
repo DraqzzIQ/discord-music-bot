@@ -4,18 +4,20 @@ using DMusicBot.AutocompleteHandlers;
 using DMusicBot.Models;
 using DMusicBot.Services;
 using DMusicBot.Extensions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using DMusicBot.Util;
 using Lavalink4NET;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Lavalink4NET.Tracks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
 
 [Group("playlist", "Playlist Management")]
-public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> logger, IDbService dbService)
-    : BaseModule(audioService, logger)
+public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> logger, IDbService dbService, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     private readonly IDbService _dbService = dbService;
     private const int MaxPlaylistNameLength = 100;
@@ -190,7 +192,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("play", "Play a playlist", runMode: RunMode.Async)]
     public async Task PlayAsync(
-        [Summary("playlist_name", "Name of the playlist to play"),
+        [Summary("playlist-name", "Name of the playlist to play"),
          Autocomplete(typeof(PlaylistNameAutocompleteHandler))]
         string name)
     {
@@ -242,6 +244,11 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
         
         List<PlaylistModel> playlists = await _dbService.GetPlaylistsAsync(Context.Guild.Id).ConfigureAwait(false);
         Embed[] embeds = EmbedCreator.CreateEmbeds("Playlists", playlists.Select(p => $"{p.Name} - {p.Tracks.Count}").ToList());
+        if(embeds.Length == 0)
+        {
+            await FollowupAsync("No playlists.").ConfigureAwait(false);
+            return;
+        }
         await FollowupAsync(embeds: embeds).ConfigureAwait(false);
     }
 

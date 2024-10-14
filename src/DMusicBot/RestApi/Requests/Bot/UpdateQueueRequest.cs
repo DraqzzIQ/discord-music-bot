@@ -1,9 +1,9 @@
-using Lavalink4NET.Players;
+using DMusicBot.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DMusicBot.RestApi.Requests.Bot;
 
-public class UpdateQueueRequest : BaseRequest
+public class UpdateQueueRequest : GuildRequest
 {
-    [FromBody] public ITrackQueueItem[] Queue { get; init; }
+    [FromBody] public TrackDto[] Queue { get; init; }
 }

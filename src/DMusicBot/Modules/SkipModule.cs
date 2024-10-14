@@ -1,9 +1,12 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class SkipModule(IAudioService audioService, ILogger<SkipModule> logger) : BaseModule(audioService, logger)
+public sealed class SkipModule(IAudioService audioService, ILogger<SkipModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Skips the current track asynchronously.
@@ -25,7 +28,7 @@ public sealed class SkipModule(IAudioService audioService, ILogger<SkipModule> l
             return;
         }
 
-        await player.SkipAsync(count).ConfigureAwait(false);
+        await player.SkipSignalRAsync(count).ConfigureAwait(false);
 
         var track = player.CurrentItem;
 

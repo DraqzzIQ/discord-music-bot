@@ -1,10 +1,13 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players.Queued;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
-public sealed class LoopQueueModule(IAudioService audioService, ILogger<LoopQueueModule> logger) : BaseModule(audioService, logger)
+public sealed class LoopQueueModule(IAudioService audioService, ILogger<LoopQueueModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Loops the queue asynchronously.

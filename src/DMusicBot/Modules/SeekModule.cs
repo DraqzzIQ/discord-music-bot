@@ -1,10 +1,13 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 using DMusicBot.Util;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
-public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> logger) : BaseModule(audioService, logger)
+public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Seeks to the provided position asynchronously.
@@ -28,7 +31,7 @@ public sealed class SeekModule(IAudioService audioService, ILogger<SeekModule> l
             return;
         }
 
-        await player.SeekAsync(position).ConfigureAwait(false);
+        await player.SeekSignalRAsync(position).ConfigureAwait(false);
 
 
         await RespondAsync($"Seeked to {TimeSpanFormatter.FormatDuration(position)}.").ConfigureAwait(false);

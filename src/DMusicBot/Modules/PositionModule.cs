@@ -1,10 +1,13 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 using DMusicBot.Util;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
-public sealed class PositionModule(IAudioService audioService, ILogger<PositionModule> logger) : BaseModule(audioService, logger)
+public sealed class PositionModule(IAudioService audioService, ILogger<PositionModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Shows the track position asynchronously.

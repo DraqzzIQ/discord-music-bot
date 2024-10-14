@@ -1,13 +1,16 @@
 ﻿using Discord;
 using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
 using Lavalink4NET.Integrations.LyricsJava;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
 
-public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModule> logger) : BaseModule(audioService, logger)
+public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     private const int MaxEmbedMessageSize = 4000;
     private const int MaxTotalMessageSize = 5900;

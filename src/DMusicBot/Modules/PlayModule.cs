@@ -1,13 +1,16 @@
 ﻿using Discord;
 using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using DMusicBot.Util;
 using Lavalink4NET;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> logger) : BaseModule(audioService, logger)
+public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Plays music asynchronously.
@@ -26,7 +29,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
             return;
         }
 
-        var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.Deezer).ConfigureAwait(false);
+        var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.YouTube).ConfigureAwait(false);
 
 
         if (tracks.Count == 0)
@@ -39,12 +42,12 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
         {
             if (player.CurrentItem is null)
             {
-                await player.PlayAsync(tracks.Tracks[0]).ConfigureAwait(false);
-                await player.Queue.AddRangeAsync(tracks.Tracks.Skip(1).Select(t => new TrackQueueItem(t)).ToList()).ConfigureAwait(false);
+                await player.PlaySignalRAsync(tracks.Tracks[0]).ConfigureAwait(false);
+                await player.AddRangeSignalRAsync(tracks.Tracks.Skip(1)).ConfigureAwait(false);
             }
             else
             {
-                await player.Queue.AddRangeAsync(tracks.Tracks.Select(t => new TrackQueueItem(t)).ToList()).ConfigureAwait(false);
+                await player.AddRangeSignalRAsync(tracks.Tracks).ConfigureAwait(false);
             }
 
             await FollowupAsync($"🔈 Added {tracks.Count} tracks to queue").ConfigureAwait(false);
@@ -61,7 +64,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
             return;
         }
 
-        var position = await player.PlayAsync(track).ConfigureAwait(false);
+        await player.PlaySignalRAsync(track).ConfigureAwait(false);
 
         Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
         await FollowupAsync(embed: embed).ConfigureAwait(false);

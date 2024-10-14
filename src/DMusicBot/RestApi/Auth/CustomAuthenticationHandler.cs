@@ -15,14 +15,12 @@ public class CustomAuthenticationHandler(
     ILoggerFactory logger,
     UrlEncoder encoder) : AuthenticationHandler<CustomAuthenticationSchemeOptions>(options, logger, encoder)
 {
-    private readonly IDbService _dbService = dbService;
-
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         string? tokenValue = null;
 
         // Attempt to get the token from the cookie
-        if (Request.Cookies.TryGetValue("authCookie", out string? cookieValue))
+        if (Request.Cookies.TryGetValue("authToken", out string? cookieValue))
             tokenValue = cookieValue;
 
         // If not found in the cookie, try to retrieve the token from the Authorization header
@@ -37,14 +35,13 @@ public class CustomAuthenticationHandler(
             return AuthenticateResult.Fail("Invalid token");
 
 
-        AuthModel? auth = await _dbService.GetAuthTokenAsync(token).ConfigureAwait(false);
+        UserModel? auth = await dbService.GetUserAsync(token).ConfigureAwait(false);
         if (auth is null)
             return AuthenticateResult.Fail("Unauthorized");
 
         var claims = new List<Claim>
         {
             new("UserId", auth.Value.UserId.ToString()),
-            new("GuildId", auth.Value.GuildId.ToString())
         };
 
         ClaimsIdentity identity = new(claims, Scheme.Name);

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DMusicBot.RestApi.Requests.Bot;
 
-public class JoinRequest : BaseRequest
+public class JoinRequest : GuildRequest
 {
-    [FromServices] public DiscordSocketClient DiscordSocketClient { get; set; }
+    [FromServices] public DiscordSocketClient DiscordSocketClient { get; init; }
 }

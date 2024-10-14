@@ -1,10 +1,13 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
-public sealed class ResumeModule(IAudioService audioService, ILogger<ResumeModule> logger) : BaseModule(audioService, logger)
+public sealed class ResumeModule(IAudioService audioService, ILogger<ResumeModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Resumes the music asynchronously.

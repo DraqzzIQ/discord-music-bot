@@ -1,9 +1,12 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class StopModule(IAudioService audioService, ILogger<StopModule> logger) : BaseModule(audioService, logger)
+public sealed class StopModule(IAudioService audioService, ILogger<StopModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Stops the current track asynchronously.
@@ -25,7 +28,7 @@ public sealed class StopModule(IAudioService audioService, ILogger<StopModule> l
             return;
         }
 
-        await player.StopAsync().ConfigureAwait(false);
+        await player.StopSignalRAsync().ConfigureAwait(false);
         await RespondAsync("Stopped playing.").ConfigureAwait(false);
     }
 }

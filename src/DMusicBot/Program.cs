@@ -68,7 +68,7 @@ builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
 
 builder.Services.Configure<IdleInactivityTrackerOptions>(options =>
 {
-    options.Timeout = TimeSpan.FromSeconds(300);
+    options.Timeout = TimeSpan.FromSeconds(1800);
 });
 
 // Audio Service Event Handler
@@ -77,6 +77,10 @@ builder.Services.AddSingleton<AudioServiceEventHandler>();
 // Api
 builder.Services.AddEndpointDefinitions(typeof(IEndpointDefinition));
 builder.Services.AddSingleton(TimeProvider.System);
+
+// DB
+builder.Services.AddSingleton<IDbService, MongoDbService>();
+
 
 // Auth
 builder.Services.AddAuthentication

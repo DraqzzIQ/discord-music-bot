@@ -4,10 +4,13 @@ using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players.Queued;
 using Discord;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using DMusicBot.Util;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
-public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModule> logger) : BaseModule(audioService, logger)
+public sealed class PlayNextModule(IAudioService audioService, ILogger<PlayModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Enqueues the music at the front asynchronously.

@@ -17,9 +17,10 @@ public interface IDbService
     public Task UpdatePlaylistAsync(PlaylistModel playlist);
     public Task<List<PlaylistModel>> FindMatchingPlaylistsAsync(ulong guildId, string query);
     public Task<List<TrackModel>> FindMatchingTracksForPlaylistAsync(ulong guildId, string playlistName, string query);
-    public Task RemoveAllMatchingAuthTokensAsync(AuthModel authModel);
-    public Task AddAuthTokenAsync(AuthModel authModel);
-    public Task<AuthModel?> GetAuthTokenAsync(Guid token);
+    public Task UpdateUserAsync(UserModel userModel);
+    public Task AddUserAsync(UserModel userModel);
+    public Task<UserModel?> GetUserAsync(Guid token);
+    public Task<UserModel?> GetUserAsync(ulong userId);
     public Task SetBotChannelAsync(BotChannelModel botChannel);
     public Task<BotChannelModel?> GetBotChannelAsync(ulong guildId);
 }

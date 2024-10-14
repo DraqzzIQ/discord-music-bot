@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DMusicBot.RestApi.Requests.Bot;
 
-public class PlayTrackRequest : BaseRequest
+public class PlayTrackRequest : GuildRequest
 {
     [FromBody] public LavalinkTrack[] Tracks { get; init; }
 }

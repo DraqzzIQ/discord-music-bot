@@ -1,6 +1,6 @@
 using Lavalink4NET.Players;
 
-namespace DMusicBot.Api.Responses.Bot;
+namespace DMusicBot.RestApi.Responses.Bot;
 
 public struct QueueResponse
 {

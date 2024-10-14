@@ -1,17 +1,15 @@
 ﻿using DMusicBot.Audio;
 using DMusicBot.Factories;
-using Lavalink4NET.Clients;
-using Lavalink4NET.Players.Queued;
-
-namespace DMusicBot.Modules;
-
-using System;
-using System.Threading.Tasks;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Discord.Interactions;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
+
+namespace DMusicBot.Modules;
 
 /// <summary>
 ///     Presents some of the main features of the Lavalink4NET-Library.
@@ -21,25 +19,32 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
 {
     protected readonly IAudioService _audioService;
     protected readonly ILogger<BaseModule> _logger;
+    protected readonly IHubContext<BotHub, IBotClient> _hubContext;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="BaseModule"/> class.
     /// </summary>
     /// <param name="audioService">the audio service</param>
     /// <param name="logger">the logger</param>
+    /// <param name="hubContext">the hubContext</param>
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentNullException">
     ///     thrown if the specified <paramref name="logger"/> is <see langword="null"/>.
     /// </exception>
-    protected BaseModule(IAudioService audioService, ILogger<BaseModule> logger)
+    ///  /// <exception cref="ArgumentNullException">
+    ///     thrown if the specified <paramref name="hubContext"/> is <see langword="null"/>.
+    /// </exception>
+    protected BaseModule(IAudioService audioService, ILogger<BaseModule> logger, IHubContext<BotHub, IBotClient> hubContext)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(hubContext);
 
         _audioService = audioService;
         _logger = logger;
+        _hubContext = hubContext;
     }
 
     /// <summary>
@@ -57,7 +62,7 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
             ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
 
         var result = await _audioService.Players
-            .RetrieveAsync(Context, playerFactory: CustomQueuedPlayerFactory.CustomQueued, retrieveOptions)
+            .RetrieveAsync(Context, playerFactory: CustomQueuedPlayerFactory.CustomQueued, new SignalRPlayerOptions {HubContext = _hubContext}, retrieveOptions)
             .ConfigureAwait(false);
 
         if (!result.IsSuccess)

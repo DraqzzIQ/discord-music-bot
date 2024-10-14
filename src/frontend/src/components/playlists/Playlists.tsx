@@ -1,14 +1,16 @@
 import React from "react";
-import PlaylistSkeleton from "@/components/sceletons/PlaylistSkeleton";
+import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 
-const Playlists: React.FC = () => {
+interface PlaylistsProps {
+    children?: React.ReactNode;
+}
+
+const Playlists: React.FC<PlaylistsProps> = ({ children }) => {
     return (
         <ScrollArea className="p-4 overflow-y-auto flex-grow ">
             <div className="grid-responsive">
-                {Array.from({ length: 10 }, (_, index) => (
-                    <PlaylistSkeleton key={index} />
-                ))}
+                {children}
             </div>
         </ScrollArea>
     );

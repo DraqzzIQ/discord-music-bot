@@ -1,9 +1,12 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
-public sealed class ShuffleModule(IAudioService audioService, ILogger<ShuffleModule> logger) : BaseModule(audioService, logger)
+public sealed class ShuffleModule(IAudioService audioService, ILogger<ShuffleModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Shuffles the queue asynchronously.
@@ -19,7 +22,7 @@ public sealed class ShuffleModule(IAudioService audioService, ILogger<ShuffleMod
             return;
         }
 
-        await player.Queue.ShuffleAsync().ConfigureAwait(false);
+        await player.ShuffleQueueSignalRAsync().ConfigureAwait(false);
 
         await RespondAsync($"Queue shuffled").ConfigureAwait(false);
     }

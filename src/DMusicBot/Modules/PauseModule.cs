@@ -1,10 +1,13 @@
 ﻿using Discord.Interactions;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
 using Lavalink4NET.Players;
+using Microsoft.AspNetCore.SignalR;
 
 namespace DMusicBot.Modules;
-public sealed class PauseModule(IAudioService audioService, ILogger<PauseModule> logger) : BaseModule(audioService, logger)
+public sealed class PauseModule(IAudioService audioService, ILogger<PauseModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Pauses the music asynchronously.
@@ -26,7 +29,7 @@ public sealed class PauseModule(IAudioService audioService, ILogger<PauseModule>
             return;
         }
 
-        await player.PauseAsync().ConfigureAwait(false);
+        await player.PauseSignalRAsync().ConfigureAwait(false);
         await RespondAsync("Paused.").ConfigureAwait(false);
     }
 }

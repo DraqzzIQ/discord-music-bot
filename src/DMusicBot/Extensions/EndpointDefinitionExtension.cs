@@ -1,7 +1,8 @@
+using DMusicBot.RestApi.EndpointDefinitions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DMusicBot.RestApi.EndpointDefinitions;
+namespace DMusicBot.Extensions;
 
 public static class EndpointDefinitionExtension
 {

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using DMusicBot.Models;
 using MongoDB.Driver;
 
@@ -6,7 +7,7 @@ namespace DMusicBot.Services;
 public class MongoDbService : IDbService
 {
     private readonly IMongoCollection<PlaylistModel> _playlistCollection;
-    private readonly IMongoCollection<AuthModel> _authCollection;
+    private readonly IMongoCollection<UserModel> _authCollection;
     private readonly IMongoCollection<BotChannelModel> _botChannelCollection;
 
     public MongoDbService(ConfigService config)
@@ -16,7 +17,7 @@ public class MongoDbService : IDbService
         MongoClient client = new(config.DbConnectionString);
         IMongoDatabase database = client.GetDatabase("music-bot");
         _playlistCollection = database.GetCollection<PlaylistModel>("playlists");
-        _authCollection = database.GetCollection<AuthModel>("auth");
+        _authCollection = database.GetCollection<UserModel>("auth");
         _botChannelCollection = database.GetCollection<BotChannelModel>("bot-channels");
     }
 
@@ -88,7 +89,10 @@ public class MongoDbService : IDbService
 
     public async Task UpdatePlaylistAsync(PlaylistModel playlist)
     {
-        await _playlistCollection.ReplaceOneAsync(p => p.GuildId == playlist.GuildId && p.Name == playlist.Name, playlist).ConfigureAwait(false);
+        await _playlistCollection.UpdateOneAsync(p => p.Id == playlist.Id, Builders<PlaylistModel>.Update
+            .Set(p => p.Tracks, playlist.Tracks)
+            .Set(p => p.IsPublic, playlist.IsPublic)
+            .Set(p => p.Name, playlist.Name)).ConfigureAwait(false);
     }
 
     public async Task<List<PlaylistModel>> FindMatchingPlaylistsAsync(ulong guildId, string query)
@@ -102,22 +106,32 @@ public class MongoDbService : IDbService
         return playlist.Tracks.Where(t => t.Title.ToLower().Contains(query.ToLower())).ToList();
     }
 
-    public async Task RemoveAllMatchingAuthTokensAsync(AuthModel authModel)
+    public async Task UpdateUserAsync(UserModel userModel)
     {
-        await _authCollection.DeleteManyAsync(a => a.UserId == authModel.UserId && a.GuildId == authModel.GuildId).ConfigureAwait(false);
+        await _authCollection.UpdateOneAsync(a => a.UserId == userModel.UserId, Builders<UserModel>.Update
+            .Set(a => a.Token, userModel.Token)
+            .Set(a => a.GuildIds, userModel.GuildIds)).ConfigureAwait(false);
     }
 
-    public async Task AddAuthTokenAsync(AuthModel authModel)
+    public async Task AddUserAsync(UserModel userModel)
     {
-        await _authCollection.InsertOneAsync(authModel).ConfigureAwait(false);
+        await _authCollection.InsertOneAsync(userModel).ConfigureAwait(false);
     }
 
-    public async Task<AuthModel?> GetAuthTokenAsync(Guid token)
+    public async Task<UserModel?> GetUserAsync(Guid token)
     {
         if (!await _authCollection.Find(a => a.Token == token).AnyAsync().ConfigureAwait(false))
             return null;
 
         return await _authCollection.Find(a => a.Token == token).FirstOrDefaultAsync().ConfigureAwait(false);
+    }
+    
+    public async Task<UserModel?> GetUserAsync(ulong userId)
+    {
+        if (!await _authCollection.Find(a => a.UserId == userId).AnyAsync().ConfigureAwait(false))
+            return null;
+
+        return await _authCollection.Find(a => a.UserId == userId).FirstOrDefaultAsync().ConfigureAwait(false);
     }
     
     public async Task SetBotChannelAsync(BotChannelModel botChannel)

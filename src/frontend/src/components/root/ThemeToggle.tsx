@@ -18,7 +18,7 @@ export function ModeToggle() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="m-0.5">
                     <Sun
                         className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
                     <Moon
@@ -43,8 +43,6 @@ export function ModeToggle() {
 
 export function ThemeToggle() {
     return (
-        <div className="absolute top-4 right-4 z-50">
-            <ModeToggle/>
-        </div>
+        <ModeToggle/>
     )
 }

@@ -2,7 +2,7 @@ using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Tracks;
 
-namespace DMusicBot.Api.Responses.Bot;
+namespace DMusicBot.RestApi.Responses.Bot;
 
 public struct StatusResponse
 {

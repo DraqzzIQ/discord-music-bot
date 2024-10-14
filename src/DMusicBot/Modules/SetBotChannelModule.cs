@@ -3,12 +3,15 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using DMusicBot.Models;
 using DMusicBot.Services;
+using DMusicBot.SignalR.Clients;
+using DMusicBot.SignalR.Hubs;
 using Lavalink4NET;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DMusicBot.Modules;
 
-public class SetBotChannelModule(IAudioService audioService, ILogger<SetBotChannelModule> logger, IDbService dbService) : BaseModule(audioService, logger)
+public class SetBotChannelModule(IAudioService audioService, ILogger<SetBotChannelModule> logger, IDbService dbService, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     private readonly IDbService _dbService = dbService;
     

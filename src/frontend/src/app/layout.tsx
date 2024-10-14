@@ -6,6 +6,7 @@ import {ThemeProvider} from "@/components/root/ThemeProvider";
 import {ThemeToggle} from "@/components/root/ThemeToggle";
 
 import {cn} from "@/lib/utils";
+import HomeButton from "@/components/root/HomeButton";
 
 const fontSans = FontSans({
     subsets: ["latin"],
@@ -23,11 +24,14 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-        <body className={cn("min-h-screen font-sans antialiased",
+        <body className={cn("h-full font-sans antialiased select-none",
             fontSans.variable
         )}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <ThemeToggle/>
+            <div className="absolute top-4 left-4 z-50 flex flex-row">
+                <HomeButton/>
+                <ThemeToggle/>
+            </div>
             <div className="bg-background text-foreground flex-1">
                 {children}
             </div>
