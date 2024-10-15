@@ -19,7 +19,6 @@ namespace DiscordMusicBot.Modules;
 [Group("playlist", "Playlist Management")]
 public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> logger, IDbService dbService, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
-    private readonly IDbService _dbService = dbService;
     private const int MaxPlaylistNameLength = 100;
 
     /// <summary>
@@ -33,7 +32,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** already exists.").ConfigureAwait(false);
@@ -46,7 +45,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
             return;
         }
         
-        PlaylistModel playlist = await _dbService.CreatePlaylistAsync(Context.User.Id,  Context.Guild.Id, name, publicPlaylist).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.CreatePlaylistAsync(Context.User.Id,  Context.Guild.Id, name, publicPlaylist).ConfigureAwait(false);
         await FollowupAsync($"Created {(publicPlaylist ? "public" : "private")} playlist **{playlist.Name}**.").ConfigureAwait(false);
     }
 
@@ -63,21 +62,21 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** does not exist.").ConfigureAwait(false);
             return;
         }
 
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if(!playlist.IsPublic && playlist.OwnerId != Context.User.Id)
         {
             await FollowupAsync($"**{name}** is a private playlist and you are not the owner.").ConfigureAwait(false);
             return;
         }
         
-        await _dbService.DeletePlaylistAsync(playlist).ConfigureAwait(false);
+        await dbService.DeletePlaylistAsync(playlist).ConfigureAwait(false);
         
         await FollowupAsync($"Deleted playlist **{name}**.").ConfigureAwait(false);
     }
@@ -95,14 +94,14 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** does not exist.").ConfigureAwait(false);
             return;
         }
 
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
         List<TrackModel> tracks = playlist.Tracks;
 
         Embed[] embeds = EmbedCreator.CreateEmbeds($"Tracks in {playlist.Name}", tracks.Select(t => $"[{t.Title}]({t.Uri}) by {t.Author}").ToList());
@@ -122,14 +121,14 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** does not exist.").ConfigureAwait(false);
             return;
         }
         
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if(!playlist.IsPublic && playlist.OwnerId != Context.User.Id)
         {
             await FollowupAsync($"**{name}** is a private playlist and you are not the owner.").ConfigureAwait(false);
@@ -137,7 +136,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
         }
         playlist.Tracks.Shuffle();
 
-        await _dbService.UpdatePlaylistAsync(playlist).ConfigureAwait(false);
+        await dbService.UpdatePlaylistAsync(playlist).ConfigureAwait(false);
         
         await FollowupAsync($"Shuffled **{playlist.Name}**.").ConfigureAwait(false);
     }
@@ -159,14 +158,14 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, originalName).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, originalName).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{originalName}** does not exist.").ConfigureAwait(false);
             return;
         }
 
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, originalName).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, originalName).ConfigureAwait(false);
         if(!playlist.IsPublic && playlist.OwnerId != Context.User.Id)
         {
             await FollowupAsync($"**{originalName}** is a private playlist and you are not the owner.").ConfigureAwait(false);
@@ -180,7 +179,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
         }
         
         playlist.Name = newName;
-        await _dbService.UpdatePlaylistAsync(playlist).ConfigureAwait(false);
+        await dbService.UpdatePlaylistAsync(playlist).ConfigureAwait(false);
         
         await FollowupAsync($"Renamed **{originalName}** to **{newName}**.").ConfigureAwait(false);
     }
@@ -204,14 +203,14 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
             return;
         }
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** does not exist.").ConfigureAwait(false);
             return;
         }
         
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
 
         List<LavalinkTrack> tracks = playlist.Tracks.Select(t => LavalinkTrack.Parse(t.SerializationString, null)).ToList();
         if (tracks.Count == 0)
@@ -242,7 +241,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        List<PlaylistModel> playlists = await _dbService.GetPlaylistsAsync(Context.Guild.Id).ConfigureAwait(false);
+        List<PlaylistModel> playlists = await dbService.GetPlaylistsAsync(Context.Guild.Id).ConfigureAwait(false);
         Embed[] embeds = EmbedCreator.CreateEmbeds("Playlists", playlists.Select(p => $"{p.Name} - {p.Tracks.Count}").ToList());
         if(embeds.Length == 0)
         {
@@ -276,7 +275,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
 
         if (tracks.IsPlaylist)
         {
-            await _dbService.AddTracksToPlaylistAsync(Context.Guild.Id, name, tracks.Tracks.Select(t => new TrackModel
+            await dbService.AddTracksToPlaylistAsync(Context.Guild.Id, name, tracks.Tracks.Select(t => new TrackModel
             {
                 Title = t.Title,
                 Author = t.Author,
@@ -316,7 +315,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
             SerializationString = track.ToString()
         };
 
-        await _dbService.AddTrackToPlaylistAsync(Context.Guild.Id, name, trackModel).ConfigureAwait(false);
+        await dbService.AddTrackToPlaylistAsync(Context.Guild.Id, name, trackModel).ConfigureAwait(false);
 
         Embed embed = EmbedCreator.CreateEmbed($"Added to **{name}**", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
         await FollowupAsync(embed: embed).ConfigureAwait(false);
@@ -337,28 +336,28 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, playlistName).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, playlistName).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{playlistName}** does not exist.").ConfigureAwait(false);
             return;
         }
 
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, playlistName).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, playlistName).ConfigureAwait(false);
         if(!playlist.IsPublic && playlist.OwnerId != Context.User.Id)
         {
             await FollowupAsync($"**{playlistName}** is a private playlist and you are not the owner.").ConfigureAwait(false);
             return;
         }
         
-        bool trackExists = await _dbService.TrackExistsInPlaylistAsync(Context.Guild.Id, playlistName, trackName).ConfigureAwait(false);
+        bool trackExists = await dbService.TrackExistsInPlaylistAsync(Context.Guild.Id, playlistName, trackName).ConfigureAwait(false);
         if (!trackExists)
         {
             await FollowupAsync($"Track **{trackName}** does not exist in **{playlistName}**.").ConfigureAwait(false);
             return;
         }
         
-        await _dbService.RemoveTrackFromPlaylistAsync(Context.Guild.Id, playlistName, trackName).ConfigureAwait(false);
+        await dbService.RemoveTrackFromPlaylistAsync(Context.Guild.Id, playlistName, trackName).ConfigureAwait(false);
         
         await FollowupAsync($"Removed **{trackName}** from **{playlistName}**.").ConfigureAwait(false);
     }
@@ -376,21 +375,21 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** does not exist.").ConfigureAwait(false);
             return;
         }
 
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if(playlist.OwnerId != Context.User.Id)
         {
             await FollowupAsync($"You are not the owner of **{name}**.").ConfigureAwait(false);
             return;
         }
         
-        await _dbService.SetPlaylistPublicAsync(Context.Guild.Id, name, true).ConfigureAwait(false);
+        await dbService.SetPlaylistPublicAsync(Context.Guild.Id, name, true).ConfigureAwait(false);
         await FollowupAsync($"Set **{name}** to public.").ConfigureAwait(false);
     }
     
@@ -407,21 +406,21 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
     {
         await DeferAsync().ConfigureAwait(false);
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if (!playlistExists)
         {
             await FollowupAsync($"Playlist **{name}** does not exist.").ConfigureAwait(false);
             return;
         }
 
-        PlaylistModel playlist = await _dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
+        PlaylistModel playlist = await dbService.GetPlaylistAsync(Context.Guild.Id, name).ConfigureAwait(false);
         if(playlist.OwnerId != Context.User.Id)
         {
             await FollowupAsync($"You are not the owner of **{name}**.").ConfigureAwait(false);
             return;
         }
         
-        await _dbService.SetPlaylistPublicAsync(Context.Guild.Id, name, false).ConfigureAwait(false);
+        await dbService.SetPlaylistPublicAsync(Context.Guild.Id, name, false).ConfigureAwait(false);
         await FollowupAsync($"Set **{name}** to private.").ConfigureAwait(false);
     }
 }

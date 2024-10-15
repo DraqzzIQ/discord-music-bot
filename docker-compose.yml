@@ -3,10 +3,10 @@ services:
     image: bot:latest
     build:
       context: .
-      dockerfile: src/DMusicBot/Dockerfile
+      dockerfile: src/DiscordMusicBot/Dockerfile
     restart: unless-stopped
     env_file:
-      - Bot/bot.env
+      - bot.env
     depends_on:
       - db
       - lavalink

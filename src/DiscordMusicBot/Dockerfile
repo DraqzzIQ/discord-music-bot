@@ -1,21 +1,21 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/sdk AS base
 USER $APP_UID
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/DMusicBot/DMusicBot.csproj", "DMusicBot.csproj"]
-RUN dotnet restore "DMusicBot.csproj"
-COPY src/DMusicBot .
+COPY ["src/DiscordMusicBot/DiscordMusicBot.csproj", "DiscordMusicBot.csproj"]
+RUN dotnet restore "DiscordMusicBot.csproj"
+COPY src/DiscordMusicBot .
 WORKDIR "/src/"
-RUN dotnet build "DMusicBot.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "DiscordMusicBot.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "DMusicBot.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "DiscordMusicBot.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "DMusicBot.dll"]
+ENTRYPOINT ["dotnet", "DiscordMusicBot.dll"]
