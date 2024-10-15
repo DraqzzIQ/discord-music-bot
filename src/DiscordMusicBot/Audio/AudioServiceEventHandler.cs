@@ -10,13 +10,9 @@ namespace DiscordMusicBot.Audio;
 
 public class AudioServiceEventHandler(IDbService dbService, DiscordSocketClient discordSocketClient, IAudioService audioService)
 {
-    private readonly IDbService _dbService = dbService;
-    private readonly DiscordSocketClient _discordSocketClient = discordSocketClient;
-    private readonly IAudioService _audioService = audioService;
-
     private async Task TrackStartedHandler(object sender, TrackStartedEventArgs args)
     {
-        ITextChannel? textChannel = await GuildChannelUtil.GetBotGuildChannel(_dbService, _discordSocketClient, args.Player.GuildId)
+        ITextChannel? textChannel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, args.Player.GuildId)
             .ConfigureAwait(false);
         
         if (textChannel is null)
@@ -25,13 +21,13 @@ public class AudioServiceEventHandler(IDbService dbService, DiscordSocketClient 
         if (args.Player is SignalRPlayer { RepeatMode: TrackRepeatMode.Track })
             return;
 
-        Embed embed = EmbedCreator.CreateEmbed("Now Playing", $"[{args.Track.Title}]({args.Track.Uri})\n{args.Track.Author}\nDuration: {args.Track.Duration}",
+        Embed embed = EmbedCreator.CreateEmbed("Now Playing", $"[{args.Track.Title}]({args.Track.Uri})\n{args.Track.Author}\nDuration: {TimeSpanFormatter.FormatDuration(args.Track.Duration)}",
             Color.Blue, true, args.Track.ArtworkUri);
         await textChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
     }
     
     public void RegisterHandlers()
     {
-        _audioService.TrackStarted += TrackStartedHandler;
+        audioService.TrackStarted += TrackStartedHandler;
     }
 }

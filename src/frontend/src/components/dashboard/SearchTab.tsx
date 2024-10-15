@@ -7,8 +7,8 @@ import {Tabs, TabsContent, TabsTrigger, TabsList} from "@/components/ui/tabs";
 import {SearchResponseDto} from "@/dtos/SearchResponseDto";
 import SearchTrack from "@/components/dashboard/search/SearchTrack";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import SearchPlaylist from "@/components/dashboard/search/SearchPlaylist";
 import InfoTooltip from "@/components/ui/info-tooltip";
+import SearchPlaylist from "@/components/dashboard/search/SearchPlaylist";
 
 export interface SearchTabProps {
     guildId: number
@@ -57,25 +57,30 @@ export default function SearchTab({guildId}: SearchTabProps) {
     }
 
     return (
-        <div className="w-full items-center mt-2">
+        <div className="w-full mt-2 h-full">
             <div className="flex justify-center items-center w-full space-x-1">
-                <SearchInput onSearch={onSearch} onChange={(query: string) => setTmpQuery(query)} placeholder="What do you want play?"/>
-                <SearchModeSelector onSelect={async (value) => {setSearchMode(value); await onSearch(tmpQuery, value)}}/>
+                <SearchInput onSearch={onSearch} onChange={(query: string) => setTmpQuery(query)}
+                             placeholder="What do you want play?"/>
+                <SearchModeSelector onSelect={async (value) => {
+                    setSearchMode(value);
+                    await onSearch(tmpQuery, value)
+                }}/>
                 <InfoTooltip buttonLabel="Show help" popoverTitle="Choose Provider"
                              popoverContent="Choose the provider you want to search from or choose *Link* for links to playlists or songs."/>
             </div>
-            <Tabs defaultValue="tracks" className="w-full p-3 pb-5" value={activeTab}
+            <Tabs defaultValue="tracks" className="w-full px-2 pb-5 h-[calc(100%-88px)]" value={activeTab}
                   onValueChange={setActiveTab}>
-                <div className="flex justify-center">
+                <div className="flex justify-center mt-3">
                     <TabsList>
                         <TabsTrigger value="tracks" disabled={trackCount == 0}>Tracks ({trackCount})</TabsTrigger>
                         <TabsTrigger value="albums" disabled={albumCount == 0}>Albums ({albumCount})</TabsTrigger>
-                        <TabsTrigger value="playlists" disabled={playlistCount == 0}>Playlists ({playlistCount})</TabsTrigger>
+                        <TabsTrigger value="playlists" disabled={playlistCount == 0}>Playlists
+                            ({playlistCount})</TabsTrigger>
                     </TabsList>
                 </div>
-                <TabsContent value="tracks" className="w-full border-2 rounded-3xl">
-                    <ScrollArea className="m-2">
-                        <div className="space-y-1.5">
+                <TabsContent value="tracks" className="w-full border-2 rounded-3xl h-full overflow-hidden pb-5">
+                    <ScrollArea className="m-2 h-full overflow-hidden rounded-l-3xl">
+                        <div className="space-y-1.5 overflow-auto">
                             {searchResponse?.tracks?.length ? (
                                 searchResponse.tracks.map((track, index) => (
                                     <SearchTrack track={track} key={index}/>
@@ -86,26 +91,30 @@ export default function SearchTab({guildId}: SearchTabProps) {
                         </div>
                     </ScrollArea>
                 </TabsContent>
-                <TabsContent value="albums" className="w-full border-2 rounded-3xl">
-                    <ScrollArea className="m-2 space-y-1.5">
-                        {searchResponse?.albums?.length ? (
-                            searchResponse.albums.map((album, index) => (
-                                <SearchPlaylist playlist={album} key={index}/>
-                            ))
-                        ) : query !== "" ? (
-                            <div>No results found</div>
-                        ) : <div/>}
+                <TabsContent value="albums" className="w-full border-2 rounded-3xl h-full overflow-hidden pb-5">
+                    <ScrollArea className="m-2 h-full overflow-hidden rounded-l-3xl">
+                        <div className="space-y-1.5 overflow-auto">
+                            {searchResponse?.albums?.length ? (
+                                searchResponse.albums.map((album, index) => (
+                                    <SearchPlaylist playlist={album} key={index}/>
+                                ))
+                            ) : query !== "" ? (
+                                <div>No results found</div>
+                            ) : <div/>}
+                        </div>
                     </ScrollArea>
                 </TabsContent>
-                <TabsContent value="playlists" className="w-full border-2 rounded-3xl">
-                    <ScrollArea className="m-2 space-y-1.5">
-                        {searchResponse?.playlists?.length ? (
-                            searchResponse.playlists.map((playlist, index) => (
-                                <SearchPlaylist playlist={playlist} key={index}/>
-                            ))
-                        ) : query !== "" ? (
-                            <div>No results found</div>
-                        ) : <div/>}
+                <TabsContent value="playlists" className="w-full border-2 rounded-3xl h-full overflow-hidden pb-5">
+                    <ScrollArea className="m-2 h-full overflow-hidden rounded-l-3xl">
+                        <div className="space-y-1.5 overflow-auto">
+                            {searchResponse?.playlists?.length ? (
+                                searchResponse.playlists.map((playlist, index) => (
+                                    <SearchPlaylist playlist={playlist} key={index}/>
+                                ))
+                            ) : query !== "" ? (
+                                <div>No results found</div>
+                            ) : <div/>}
+                        </div>
                     </ScrollArea>
                 </TabsContent>
             </Tabs>

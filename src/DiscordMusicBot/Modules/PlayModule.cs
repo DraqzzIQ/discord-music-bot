@@ -5,7 +5,6 @@ using DiscordMusicBot.SignalR.Clients;
 using DiscordMusicBot.SignalR.Hubs;
 using DiscordMusicBot.Util;
 using Lavalink4NET;
-using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;

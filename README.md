@@ -50,7 +50,7 @@ Create folders for MongoDB and Lavalink data in the root directory with correct 
 
 Define `lavalink/application.yml`
 
-example `application.yml` can be found [here](example.application.yml)
+example `application.yml` can be found [here](lavalink/example.application.yml)
 
 Lavalink needs to be configured with plugins:
 - [youtube-source](https://github.com/lavalink-devs/youtube-source)

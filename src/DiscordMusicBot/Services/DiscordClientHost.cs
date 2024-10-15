@@ -40,7 +40,7 @@ internal sealed class DiscordClientHost : IHostedService
         _discordSocketClient.InteractionCreated += InteractionCreated;
         _discordSocketClient.Ready += ClientReady;
         _discordSocketClient.Log += LogAsync;
-        
+
         await _discordSocketClient
             .LoginAsync(TokenType.Bot, _config.BotToken)
             .ConfigureAwait(false);
@@ -112,14 +112,14 @@ internal sealed class DiscordClientHost : IHostedService
         _interactionService.Log += LogAsync;
 
         // register commands to guild
-// #if DEBUG
-//         await _interactionService
-//             .RegisterCommandsToGuildAsync(_config.DebugGuildId)
-//             .ConfigureAwait(false);
-// #else
+#if DEBUG
+        await _interactionService
+            .RegisterCommandsToGuildAsync(_config.DebugGuildId)
+            .ConfigureAwait(false);
+#else
         await _interactionService
             .RegisterCommandsGloballyAsync()
             .ConfigureAwait(false);
-// #endif
+#endif
     }
 }

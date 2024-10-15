@@ -14,7 +14,7 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-    title: "Music Bot Manager",
+    title: "Music Bot Dashboard",
 };
 
 export default function RootLayout({

@@ -1,6 +1,4 @@
 import {GuildDto} from "@/dtos/GuildDto";
-import {exact} from "prop-types";
-import {TrackDto} from "@/dtos/TrackDto";
 import {SearchResponseDto} from "@/dtos/SearchResponseDto";
 
 // Helper function to make API requests with cookie authentication
@@ -55,7 +53,8 @@ export async function RequestResume(guildId: number):Promise<void> {
 }
 
 export async function RequestSeek(guildId: number, position: number):Promise<void> {
-    await apiRequest(`api/bot/position?GuildId=${guildId}?positionInSeconds=${position}`, {method: 'POST' });
+    console.log("Seeking to position: " + position);
+    await apiRequest(`api/bot/position?GuildId=${guildId}&positionInSeconds=${position}`, {method: 'POST' });
 }
 
 export async function RequestShuffle(guildId: number):Promise<void> {

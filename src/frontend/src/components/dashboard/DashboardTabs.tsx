@@ -9,23 +9,21 @@ export interface DashboardTabsProps {
 
 export default function DashboardTabs({guildId}: DashboardTabsProps) {
     return (
-        <SearchTab guildId={guildId}/>
+        <VerticalTabs defaultValue="search" className="w-full h-full items-center p-3">
+            <VerticalTabsList className="">
+                <VerticalTabsTrigger value="search">Search</VerticalTabsTrigger>
+                <VerticalTabsTrigger value="lyrics">Lyrics</VerticalTabsTrigger>
+                <VerticalTabsTrigger value="playlists" disabled={true}>Playlists</VerticalTabsTrigger>
+            </VerticalTabsList>
+            <VerticalTabsContent value="search" className="w-full h-full border-2 rounded-3xl">
+                <SearchTab guildId={guildId}/>
+            </VerticalTabsContent>
+            <VerticalTabsContent value="lyrics" className="w-full h-full border-2 rounded-3xl">
+                <LyricsTab/>
+            </VerticalTabsContent>
+            <VerticalTabsContent value="playlists" className="w-full h-full border-2 rounded-3xl">
+                <PlaylistTab/>
+            </VerticalTabsContent>
+        </VerticalTabs>
     )
 }
-
-// <VerticalTabs defaultValue="search" className="w-full h-full items-center p-3">
-//     <VerticalTabsList className="">
-//         <VerticalTabsTrigger value="search">Search</VerticalTabsTrigger>
-//         <VerticalTabsTrigger value="lyrics">Lyrics</VerticalTabsTrigger>
-//         <VerticalTabsTrigger value="playlists" disabled={true}>Playlists</VerticalTabsTrigger>
-//     </VerticalTabsList>
-//     <VerticalTabsContent value="search" className="w-full h-full border-2 rounded-3xl">
-//         <SearchTab guildId={guildId}/>
-//     </VerticalTabsContent>
-//     <VerticalTabsContent value="lyrics" className="w-full h-full border-2 rounded-3xl">
-//         <LyricsTab/>
-//     </VerticalTabsContent>
-//     <VerticalTabsContent value="playlists" className="w-full h-full border-2 rounded-3xl">
-//         <PlaylistTab/>
-//     </VerticalTabsContent>
-// </VerticalTabs>
