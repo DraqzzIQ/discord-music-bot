@@ -2,6 +2,7 @@
 
 namespace DiscordMusicBot.Util;
 
+// hopefully I will never have to touch this again
 public static class EmbedCreator
 {
     private const int MaxEmbedMessageSize = 4000;

@@ -262,11 +262,14 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
         [Summary("playlist_name", "Name of the playlist to add the track to"),
          Autocomplete(typeof(PlaylistNameAutocompleteHandler))]
         string name,
-        [Summary("track", "The name or link to a track")] string query)
+        [Summary("track", "The name or link to a track")] string query, 
+        [Summary("source", "The source to search"), Autocomplete(typeof(SearchModeAutoCompleteHandler))] string source = "Deezer")
     {
         await DeferAsync().ConfigureAwait(false);
+        
+        TrackSearchMode searchMode = TrackSearchModeParser.Parse(source);
 
-        var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.Deezer).ConfigureAwait(false);
+        var tracks = await _audioService.Tracks.LoadTracksAsync(query, searchMode).ConfigureAwait(false);
         if (tracks.Count == 0)
         {
             await FollowupAsync("😖 No results.").ConfigureAwait(false);
@@ -317,7 +320,7 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
 
         await dbService.AddTrackToPlaylistAsync(Context.Guild.Id, name, trackModel).ConfigureAwait(false);
 
-        Embed embed = EmbedCreator.CreateEmbed($"Added to **{name}**", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
+        Embed embed = EmbedCreator.CreateEmbed($"Added to **{name}**", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {TimeSpanFormatter.FormatDuration(track.Duration)}", Color.Blue, true, track.ArtworkUri);
         await FollowupAsync(embed: embed).ConfigureAwait(false);
     }
 

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using DiscordMusicBot.AutocompleteHandlers;
 using DiscordMusicBot.SignalR.Clients;
 using DiscordMusicBot.SignalR.Hubs;
 using DiscordMusicBot.Util;
@@ -18,18 +19,20 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
     /// <param name="query">the search query</param>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("play", description: "Plays music", runMode: RunMode.Async)]
-    public async Task Play([Summary("track", "The name or link to a track")] string query)
+    public async Task Play([Summary("track", "The name or link to a track")] string query,
+        [Summary("source", "The source to search"), Autocomplete(typeof(SearchModeAutoCompleteHandler))] string source = "Deezer")
     {
         await DeferAsync().ConfigureAwait(false);
+        
+        TrackSearchMode searchMode = TrackSearchModeParser.Parse(source);
 
         var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
-
         if (player is null)
         {
             return;
         }
 
-        var tracks = await _audioService.Tracks.LoadTracksAsync(query, TrackSearchMode.Deezer).ConfigureAwait(false);
+        var tracks = await _audioService.Tracks.LoadTracksAsync(query, searchMode).ConfigureAwait(false);
 
 
         if (tracks.Count == 0)
@@ -66,7 +69,7 @@ public sealed class PlayModule(IAudioService audioService, ILogger<PlayModule> l
 
         await player.PlaySignalRAsync(track).ConfigureAwait(false);
 
-        Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {track.Duration}", Color.Blue, true, track.ArtworkUri);
+        Embed embed = EmbedCreator.CreateEmbed("Added to queue", $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {TimeSpanFormatter.FormatDuration(track.Duration)}", Color.Blue, true, track.ArtworkUri);
         await FollowupAsync(embed: embed).ConfigureAwait(false);
     }
 }

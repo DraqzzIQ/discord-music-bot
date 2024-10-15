@@ -6,8 +6,6 @@ namespace DiscordMusicBot.AutocompleteHandlers;
 
 public class PlaylistTrackAutocompleteHandler (IDbService dbService) : AutocompleteHandler
 {
-    private readonly IDbService _dbService = dbService;
-    
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter,
         IServiceProvider services)
     {
@@ -19,13 +17,13 @@ public class PlaylistTrackAutocompleteHandler (IDbService dbService) : Autocompl
             return AutocompletionResult.FromSuccess();
         }
         
-        bool playlistExists = await _dbService.PlaylistExistsAsync(context.Guild.Id, playlistName).ConfigureAwait(false);
+        bool playlistExists = await dbService.PlaylistExistsAsync(context.Guild.Id, playlistName).ConfigureAwait(false);
         if (!playlistExists)
         {
             return AutocompletionResult.FromSuccess();
         }
         
-        (await _dbService.FindMatchingTracksForPlaylistAsync(context.Guild.Id, playlistName,autocompleteInteraction.Data.Current.Value as string ?? "").ConfigureAwait(false))
+        (await dbService.FindMatchingTracksForPlaylistAsync(context.Guild.Id, playlistName,autocompleteInteraction.Data.Current.Value as string ?? "").ConfigureAwait(false))
             .ForEach(track => { results.Add(new AutocompleteResult(track.Title, track.Title)); });
         
         return AutocompletionResult.FromSuccess(results.Take(25));
