@@ -13,26 +13,22 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DiscordClientHost> _logger;
-    private readonly ConfigService _config;
 
     public DiscordClientHost(
         DiscordSocketClient discordSocketClient,
         InteractionService interactionService,
         IServiceProvider serviceProvider,
-        ILogger<DiscordClientHost> logger,
-        ConfigService config)
+        ILogger<DiscordClientHost> logger)
     {
         ArgumentNullException.ThrowIfNull(discordSocketClient);
         ArgumentNullException.ThrowIfNull(interactionService);
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(config);
 
         _discordSocketClient = discordSocketClient;
         _interactionService = interactionService;
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _config = config;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -42,7 +38,7 @@ internal sealed class DiscordClientHost : IHostedService
         _discordSocketClient.Log += LogAsync;
 
         await _discordSocketClient
-            .LoginAsync(TokenType.Bot, _config.BotToken)
+            .LoginAsync(TokenType.Bot, ConfigService.BotToken)
             .ConfigureAwait(false);
 
         await _discordSocketClient
@@ -119,7 +115,7 @@ internal sealed class DiscordClientHost : IHostedService
         // register commands to guild
 #if DEBUG
         await _interactionService
-            .RegisterCommandsToGuildAsync(_config.DebugGuildId)
+            .RegisterCommandsToGuildAsync(ConfigService.DebugGuildId)
             .ConfigureAwait(false);
 #else
         await _interactionService

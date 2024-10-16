@@ -1,3 +1,4 @@
+using DiscordMusicBot.Services;
 using DiscordMusicBot.SignalR.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +11,6 @@ public class SignalREndpointDefinition : IEndpointDefinition
     {
         app.UseCors("CorsPolicy");
         // Use default files and static files
-        // app.UseDefaultFiles();
-        // app.UseStaticFiles();
         app.MapHub<BotHub>("/bot");
     }
 
@@ -22,7 +21,7 @@ public class SignalREndpointDefinition : IEndpointDefinition
         {
             options.AddPolicy("CorsPolicy", policy =>
             {
-                policy.WithOrigins("http://localhost:3000")
+                policy.WithOrigins(ConfigService.FrontendBaseUrl)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

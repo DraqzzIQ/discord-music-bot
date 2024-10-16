@@ -1,5 +1,5 @@
 import {TrackDto} from "@/dtos/TrackDto";
-import {PlayerState} from "../../datatypes/PlayerState";
+import {PlayerState} from "@/datatypes/PlayerState";
 
 export interface PlayerUpdatedDto {
     updateQueue: boolean;

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
-public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModule> logger, IDbService dbService, ConfigService configService, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
+public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModule> logger, IDbService dbService,IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Generates a URL with auth token to the web player.
@@ -46,7 +46,7 @@ public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModu
        
         Embed embed = new EmbedBuilder()
             .WithTitle("Web Player")
-            .WithDescription($"[Click here to open the web player]({configService.FrontendBaseUrl}/api/login/{token})")
+            .WithDescription($"[Click here to open the web player]({ConfigService.FrontendBaseUrl}/api/login/{token})")
             .Build();
         
         await FollowupAsync(embed: embed).ConfigureAwait(false);

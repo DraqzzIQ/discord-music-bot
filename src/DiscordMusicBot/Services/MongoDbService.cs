@@ -9,11 +9,9 @@ public class MongoDbService : IDbService
     private readonly IMongoCollection<UserModel> _authCollection;
     private readonly IMongoCollection<BotChannelModel> _botChannelCollection;
 
-    public MongoDbService(ConfigService config)
+    public MongoDbService()
     {
-        ArgumentNullException.ThrowIfNull(config);
-
-        MongoClient client = new(config.DbConnectionString);
+        MongoClient client = new(ConfigService.DbConnectionString);
         IMongoDatabase database = client.GetDatabase("music-bot");
         _playlistCollection = database.GetCollection<PlaylistModel>("playlists");
         _authCollection = database.GetCollection<UserModel>("auth");

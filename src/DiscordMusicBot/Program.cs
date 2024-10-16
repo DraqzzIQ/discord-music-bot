@@ -33,18 +33,13 @@ builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug))
 builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
 #endif
 
-// Config
-builder.Services.AddSingleton<ConfigService>();
-
 // Lavalink
 builder.Services.AddLavalink();
 
-ConfigService config = builder.Services.BuildServiceProvider().GetRequiredService<ConfigService>() ??
-                       throw new InvalidOperationException("Config service not found");
 builder.Services.ConfigureLavalink(options =>
 {
-    options.Passphrase = config.LavaLinkPassword;
-    options.BaseAddress = new Uri(config.LavaLinkConnectionString);
+    options.Passphrase = ConfigService.LavaLinkPassword;
+    options.BaseAddress = new Uri(ConfigService.LavaLinkConnectionString);
     options.ReadyTimeout = TimeSpan.FromSeconds(10);
     options.HttpClientName = "LavalinkHttpClient";
     options.Label = "DiscordMusicBot";

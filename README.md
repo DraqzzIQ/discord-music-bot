@@ -22,31 +22,34 @@ Discord music bot with web interface written in C# using [Lavalink4NET](https://
 
 ### Environment Variables
 
-Define the following .env files in the root directory.
+Define the following .env files
 
-bot.env
+bot.env in the root directory
 ```
-{
-    DISCORD_BOT_TOKEN=bot-token // Required, Discord Bot Token
-    LAVA_LINK_CONNECTION_STRING=http://lavalink:2333 // Required, Lavalink Connection String
-    LAVA_LINK_PASSWORD=lavalink-password // Required, Lavalink Password
-    DB_CONNECTION_STRING=connection-string // Required, Database Connection String (MongoDB)
-    DEBUG_GUILD_ID=1234567890 // Optional, used for debugging purposes
-}
+DISCORD_BOT_TOKEN=bot-token // Required, Discord Bot Token
+LAVA_LINK_CONNECTION_STRING=http://lavalink:2333 // Required, Lavalink Connection String
+LAVA_LINK_PASSWORD=lavalink-password // Required, Lavalink Password
+DB_CONNECTION_STRING=connection-string // Required, Database Connection String (MongoDB)
+DEBUG_GUILD_ID=1234567890 // Optional, used for debugging purposes
+FRONTEND_BASE_URL=http://localhost:3000 // Required, Frontend Base URL
 ```
 
-mongo.env
+mongo.env in the root directory
 ```
-{
-    MONGO_INITDB_ROOT_USERNAME=admin // Required, MongoDB Root Username
-    MONGO_INITDB_ROOT_PASSWORD=password // Required, MongoDB Root Password
-}
+MONGO_INITDB_ROOT_USERNAME=admin // Required, MongoDB Root Username
+MONGO_INITDB_ROOT_PASSWORD=password // Required, MongoDB Root Password
+```
+
+.env in src/frontend directory
+```
+NEXT_PUBLIC_REST_API_URL=http://localhost:8080/ // Required, REST API URL
+NEXT_PUBLIC_SIGNALR_API_URL=http://localhost:8080/ // Required, SignalR API URL
 ```
 
 Create folders for MongoDB and Lavalink data in the root directory with correct permissions.
 - `db-data`
 - `lavalink`
-- `lavalink/plugins`
+- `lavalink/plugins` make sure to set the correct permissions (user: 322, group: 322)
 
 Define `lavalink/application.yml`
 
