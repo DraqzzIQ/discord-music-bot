@@ -16,7 +16,7 @@ const DefaultButton: React.FC<DefaultButtonProps> = ({ children, tooltipText, on
         <Tooltip>
             <TooltipTrigger asChild>
                 <Button
-                    className={`bg-transparent text-foreground p-0 m-1 hover:scale-150 hover:bg-transparent transition duration-200 shadow-none ${className}`}
+                    className={`bg-transparent text-foreground p-0 m-1 hover:scale-125 hover:bg-transparent transition duration-200 shadow-none ${className}`}
                     onClick={onClick}
                     disabled={disabled}
                     {...props}

@@ -32,17 +32,18 @@ const SongQueue: React.FC<QueuedSongsProps> = ({children, guildId, onReorder}) =
     };
     
     return (
-        <div className="w-1/4 flex flex-col border-2 rounded-3xl mt-4 mb-2 mr-3">
+        <div className="w-1/3 flex flex-col border-2 rounded-3xl mt-4 mb-2 mr-3">
             <QueueControls guildId={guildId}/>
+            <div className="border-2 rounded-3xl m-2 mt-4 overflow-hidden flex h-full">
             <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="songQueue">
                     {(provided) => (
                         <ScrollArea
-                            className="w-full p-4 overflow-y-auto flex-grow"
+                            className="w-full my-3 ml-2 mr-2 overflow-y-auto flex-grow, rounded-l-3xl"
                             {...provided.droppableProps}
                             ref={provided.innerRef}
                         >
-                            <div className="space-y-4">
+                            <div className="space-y-3 h-full">
                                 {childrenArray.map((child, index) => (
                                     <Draggable key={`item-${index}`} draggableId={`item-${index}`} index={index}>
                                         {(provided) => (
@@ -62,6 +63,7 @@ const SongQueue: React.FC<QueuedSongsProps> = ({children, guildId, onReorder}) =
                     )}
                 </Droppable>
             </DragDropContext>
+        </div>
         </div>
     );
 };

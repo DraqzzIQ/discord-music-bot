@@ -5,6 +5,7 @@ using DiscordMusicBot.Services;
 using DiscordMusicBot.SignalR.Clients;
 using DiscordMusicBot.Extensions;
 using Lavalink4NET;
+using Lavalink4NET.Players;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -47,7 +48,17 @@ public sealed class BotHub : Hub<IBotClient>
 
         var player = (SignalRPlayer?)audioService.Players.Players.FirstOrDefault(x => x.GuildId == guildId);
         if (player is null)
+        {
+            await Clients.Caller.UpdatePlayer(new PlayerUpdatedDto
+            {
+                UpdateQueue = false,
+                CurrentTrack = null,
+                PositionInSeconds = 0,
+                Queue = [],
+                State = PlayerState.Destroyed
+            });
             return;
+        }
 
         await Clients.Caller.UpdatePlayer(new PlayerUpdatedDto
         {

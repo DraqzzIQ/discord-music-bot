@@ -9,6 +9,7 @@ import QueuedSong from "@/components/queue/QueuedSong";
 import {PlayerState} from "@/datatypes/PlayerState";
 import SongQueue from "@/components/queue/SongQueue";
 import DashboardTabs from "@/components/dashboard/DashboardTabs";
+import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
 
 export default function Dash({params} : {params: {guildId: number}}) {
     const [showQueue, setShowQueue] = React.useState(true);
@@ -16,6 +17,7 @@ export default function Dash({params} : {params: {guildId: number}}) {
     const [positionInSeconds, setPositionInSeconds] = React.useState<number>(0);
     const [queue, setQueue] = React.useState<TrackDto[]>([]);
     const [state, setState] = React.useState<PlayerState>(PlayerState.Destroyed);
+    const [loading, setLoading] = React.useState(true);
     
     const handleReorder = async (sourceIndex: number, destinationIndex: number) => {
         const reorderedQueue = Array.from(queue);
@@ -27,16 +29,24 @@ export default function Dash({params} : {params: {guildId: number}}) {
     const handleRemove = (index: number) => {
         setQueue(prevQueue => prevQueue.filter((_, i) => i !== index));
     }
+    
+    const handleSkipTo = (index: number) => {
+        if(index === 0) return;
+        setQueue(prevQueue => {
+            const newQueue = Array.from(prevQueue);
+            newQueue.splice(0, index + 1);
+            return newQueue;
+        });
+    }
 
     useEffect(() => {
         const handleUpdatePlayer = (payload: PlayerUpdatedDto) => {
-            console.log(payload);
-            
             let shouldUpdateQueue = payload.updateQueue;
             setTrack(payload.currentTrack);
             setPositionInSeconds(payload.positionInSeconds);
             if (shouldUpdateQueue) setQueue(payload.queue);
             setState(payload.state);
+            setLoading(false);
         };
         
         const handleUpdatePosition = (position: number) => {
@@ -72,18 +82,17 @@ export default function Dash({params} : {params: {guildId: number}}) {
     return (
         <div className="flex flex-col h-screen">
             <div className="flex flex-row flex-grow overflow-hidden">
-                <DashboardTabs guildId={params.guildId}/>
-                {/*<Playlists>*/}
-                {/*    {Array.from({length: 0}, (_, index) => (*/}
-                {/*        <PlaylistSkeleton key={index}/>*/}
-                {/*    ))}*/}
-                {/*</Playlists>*/}
+                <DashboardTabs guildId={params.guildId} track={track}/>
                 {showQueue && <SongQueue guildId={params.guildId} onReorder={handleReorder}>
-                    {queue.length === 0 ? (
+                    {loading ? (
+                        Array.from({length: 20}).map((_, index) => (
+                            <QueuedSongSkeleton key={index}/>
+                        ))
+                    ): queue.length === 0 ? (
                         <div className="font-semibold text-center">Queue is empty</div>
                     ) : (
                         queue.map((track, index) => (
-                            <QueuedSong key={index} track={track} guildId={params.guildId} index={index} onRemove={handleRemove}/>
+                            <QueuedSong key={index} track={track} guildId={params.guildId} index={index} onRemove={handleRemove} onMoveToTop={handleReorder} onSkipTo={handleSkipTo}/>
                         ))
                     )}
                 </SongQueue>}
@@ -93,6 +102,7 @@ export default function Dash({params} : {params: {guildId: number}}) {
                            positionInSeconds={positionInSeconds}
                            guildId={params.guildId}
                            state={state}
+                           loading={loading}
             />
         </div>
     );

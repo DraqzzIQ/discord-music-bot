@@ -12,9 +12,6 @@ using Microsoft.Extensions.Logging;
 namespace DiscordMusicBot.Modules;
 public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModule> logger, IDbService dbService, ConfigService configService, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
-    private readonly IDbService _dbService = dbService;
-    private readonly ConfigService _configService = configService;
-    
     /// <summary>
     ///     Generates a URL with auth token to the web player.
     /// </summary>
@@ -26,14 +23,14 @@ public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModu
         
         Guid token = SecureGuidGenerator.CreateCryptographicallySecureGuid();
         
-        UserModel? userModel = await _dbService.GetUserAsync(Context.User.Id).ConfigureAwait(false);
+        UserModel? userModel = await dbService.GetUserAsync(Context.User.Id).ConfigureAwait(false);
         if (userModel is not null)
         {
             UserModel updatedUser = userModel.Value;
             updatedUser.Token = token; // Regenerate token
             if(!updatedUser.GuildIds.Contains(Context.Guild.Id))
                 updatedUser.GuildIds = updatedUser.GuildIds.Append(Context.Guild.Id).ToArray(); // Add guild to user
-            await _dbService.UpdateUserAsync(updatedUser).ConfigureAwait(false);
+            await dbService.UpdateUserAsync(updatedUser).ConfigureAwait(false);
         }
         else
         {
@@ -44,7 +41,7 @@ public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModu
                 Token = token
             };
         
-            await _dbService.AddUserAsync(user).ConfigureAwait(false);
+            await dbService.AddUserAsync(user).ConfigureAwait(false);
         }
        
         Embed embed = new EmbedBuilder()

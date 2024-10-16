@@ -110,6 +110,11 @@ internal sealed class DiscordClientHost : IHostedService
 
         // enable logging
         _interactionService.Log += LogAsync;
+        
+        // set activity
+        await _discordSocketClient
+            .SetActivityAsync(new Game("Music", ActivityType.Listening))
+            .ConfigureAwait(false);
 
         // register commands to guild
 #if DEBUG

@@ -4,11 +4,19 @@ import React, {useEffect, useState} from "react";
 import {ChevronLeft, ChevronRight, PauseIcon, TriangleIcon} from "lucide-react";
 import {Slider} from "@/components/ui/slider";
 import DefaultButton from "@/components/DefaultButton";
-import {Queue} from "@phosphor-icons/react";
+import {Door, Queue, Stop} from "@phosphor-icons/react";
 import {TrackDto} from "@/dtos/TrackDto";
 import {formatDuration} from "@/lib/utils";
-import {RequestPause, RequestResume, RequestRewind, RequestSeek, RequestSkip} from "@/api/rest/apiService";
+import {
+    RequestLeave,
+    RequestPause,
+    RequestResume,
+    RequestRewind,
+    RequestSeek,
+    RequestSkip, RequestStop
+} from "@/api/rest/apiService";
 import {PlayerState} from "@/datatypes/PlayerState";
+import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
 
 interface PlayerControlProps {
     toggleQueue: () => void;
@@ -16,6 +24,7 @@ interface PlayerControlProps {
     positionInSeconds: number;
     guildId: number;
     state: PlayerState;
+    loading: boolean;
 }
 
 const PlayerControl: React.FC<PlayerControlProps> = ({
@@ -23,7 +32,8 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                                                          track,
                                                          positionInSeconds,
                                                          guildId,
-                                                         state
+                                                         state,
+                                                         loading
                                                      }) => {
     const [sliderValue, setSliderValue] = useState(positionInSeconds);
     const [currentTrack, setCurrentTrack] = useState(track);
@@ -52,12 +62,17 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
     };
 
     return (
-        <div className="flex flex-row justify-center items-center ml-2 mb-0.5 text-center border-t-2 mr-2 border-white mt-1 pt-2">
+        <div className="flex flex-row justify-center items-center ml-2 mb-0.5 text-center border-t-2 mr-2 border-black mt-1 pt-2 dark:border-white">
+            {loading ? <div className="w-1/3"><QueuedSongSkeleton/> </div> :
             <div className="flex flex-row space-x-3 w-1/3">
                 <img
-                    className={`h-[60px] w-[60px] rounded-xl object-cover ${currentTrack?.thumbnailUrl ? '' : 'dark:invert'}`}
+                    className="h-[60px] w-[60px] rounded-xl object-cover"
                     src={currentTrack?.thumbnailUrl ?? '/bluray-disc-icon.svg'}
-                    alt='thumbnail'
+                    onError={({currentTarget}) => {
+                        currentTarget.onerror = null; // prevents looping
+                        currentTarget.src = "/bluray-disc-icon.svg";
+                    }}
+                    alt='track icon'
                 />
                 <div className="space-y-2 w-full text-left">
                     <div className="w-full truncate">
@@ -69,13 +84,18 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                     <div className="text-gray-400 truncate">{currentTrack?.author ?? "No Track Playing"}</div>
                 </div>
             </div>
+            }
             <div className="felx flex-row w-1/3">
                 <div className="flex items-center justify-center">
+                    <DefaultButton tooltipText="Stop" onClick={() => RequestStop(guildId)} className="mr-2">
+                        <Stop className="w-8 h-8"/>
+                    </DefaultButton>
                     <DefaultButton tooltipText="Previous" onClick={() => RequestRewind(guildId)}>
                         <ChevronLeft className="w-10 h-10"/>
                     </DefaultButton>
                     <DefaultButton tooltipText="Play/Pause" onClick={
                         () => {
+                            if(currentTrack === null) return;
                             playerState === PlayerState.Playing ? RequestPause(guildId) : RequestResume(guildId);
                         }
                     }>
@@ -83,6 +103,9 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                     </DefaultButton>
                     <DefaultButton tooltipText="Next" onClick={() => RequestSkip(guildId)}>
                         <ChevronRight className="w-10 h-10"/>
+                    </DefaultButton>
+                    <DefaultButton tooltipText="Leave" onClick={() => RequestLeave(guildId)} className="ml-2">
+                        <Door className="w-8 h-8"/>
                     </DefaultButton>
                 </div>
                 <div className="flex justify-center">

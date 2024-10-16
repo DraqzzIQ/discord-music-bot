@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
-public sealed class DisconnectModule(IAudioService audioService, ILogger<DisconnectModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
+public sealed class LeaveModule(IAudioService audioService, ILogger<LeaveModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Disconnects from the current voice channel connected to asynchronously.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
-    [SlashCommand("disconnect", "Disconnects from the current voice channel connected to", runMode: RunMode.Async)]
-    public async Task Disconnect()
+    [SlashCommand("leave", "Disconnects from the voice channel", runMode: RunMode.Async)]
+    public async Task Leave()
     {
         var player = await GetPlayerAsync().ConfigureAwait(false);
 
@@ -22,7 +22,7 @@ public sealed class DisconnectModule(IAudioService audioService, ILogger<Disconn
             return;
         }
 
-        await player.DisconnectAsync().ConfigureAwait(false);
+        await player.DisconnectSignalRAsync().ConfigureAwait(false);
         await RespondAsync("Disconnected.").ConfigureAwait(false);
     }
 }

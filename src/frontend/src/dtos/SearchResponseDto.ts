@@ -5,5 +5,4 @@ export interface SearchResponseDto {
     tracks: TrackDto[];
     playlists: PlaylistDto[];
     albums: PlaylistDto[];
-    searchMode?: string;
 }

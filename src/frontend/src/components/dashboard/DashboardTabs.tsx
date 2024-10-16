@@ -2,14 +2,16 @@ import {VerticalTabs, VerticalTabsContent, VerticalTabsList, VerticalTabsTrigger
 import PlaylistTab from "@/components/dashboard/PlaylistTab";
 import SearchTab from "@/components/dashboard/SearchTab";
 import LyricsTab from "@/components/dashboard/LyricsTab";
+import {TrackDto} from "@/dtos/TrackDto";
 
 export interface DashboardTabsProps {
-    guildId: number
+    guildId: number;
+    track: TrackDto | null;
 }
 
-export default function DashboardTabs({guildId}: DashboardTabsProps) {
+export default function DashboardTabs({guildId, track}: DashboardTabsProps) {
     return (
-        <VerticalTabs defaultValue="search" className="w-full h-full items-center p-3">
+        <VerticalTabs defaultValue="search" className="flex-grow h-full items-center p-3">
             <VerticalTabsList className="">
                 <VerticalTabsTrigger value="search">Search</VerticalTabsTrigger>
                 <VerticalTabsTrigger value="lyrics">Lyrics</VerticalTabsTrigger>
@@ -19,7 +21,7 @@ export default function DashboardTabs({guildId}: DashboardTabsProps) {
                 <SearchTab guildId={guildId}/>
             </VerticalTabsContent>
             <VerticalTabsContent value="lyrics" className="w-full h-full border-2 rounded-3xl">
-                <LyricsTab/>
+                <LyricsTab guildId={guildId} track={track}/>
             </VerticalTabsContent>
             <VerticalTabsContent value="playlists" className="w-full h-full border-2 rounded-3xl">
                 <PlaylistTab/>

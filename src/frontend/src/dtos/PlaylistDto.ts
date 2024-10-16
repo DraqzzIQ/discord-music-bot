@@ -7,4 +7,5 @@ export interface PlaylistDto {
     artworkUrl?: string | null;
     trackCount?: number;
     selectedTrack?: TrackDto;
+    encodedTracks?: string[];
 }

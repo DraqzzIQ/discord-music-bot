@@ -1,7 +1,7 @@
 import React from "react";
 import DefaultButton from "@/components/DefaultButton";
-import {Shuffle, Trash2} from "lucide-react";
-import {RequestClear, RequestShuffle} from "@/api/rest/apiService";
+import {MenuIcon, Shuffle, Trash2} from "lucide-react";
+import {RequestClear, RequestDeduplicate, RequestShuffle} from "@/api/rest/apiService";
 
 
 export interface QueueControlsProps {
@@ -17,21 +17,31 @@ const QueueControls: React.FC<QueueControlsProps> = ({guildId}) => {
     const handleClear = async () => {
         await RequestClear(guildId);
     }
+    
+    const handleDeduplicate = async () => {
+        await RequestDeduplicate(guildId);
+    }
 
     return (
         <div className="w-full mt-2 flex justify-center h-10">
-            <div className="flex space-x-10">
+            <div className="flex space-x-1 mr-1">
                 <DefaultButton tooltipText="Shuffle Queue"
-                               className="text-lg hover:scale-110 border-2 h-9 w-32"
+                               className="text-lg hover:scale-105 border-2 h-9 w-32 mr-0"
                                onClick={handleShuffle}>
                     <Shuffle className="w-5 h-5 mr-2"/>
                     Shuffle
                 </DefaultButton>
                 <DefaultButton tooltipText="Clear Queue"
-                               className="text-lg hover:scale-110 border-2 h-9 w-32"
+                               className="text-lg hover:scale-105 border-2 h-9 w-28 mr-0"
                                onClick={handleClear}>
                     <Trash2 className="w-5 h-5 mr-2"/>
                     Clear
+                </DefaultButton>
+                <DefaultButton tooltipText="Clear Queue"
+                               className="text-lg hover:scale-105 border-2 h-9 w-40 mr-0"
+                               onClick={handleDeduplicate}>
+                    <MenuIcon className="w-5 h-5 mr-2"/>
+                    Deduplicate
                 </DefaultButton>
             </div>
         </div>

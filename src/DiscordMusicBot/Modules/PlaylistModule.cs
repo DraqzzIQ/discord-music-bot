@@ -221,12 +221,12 @@ public class PlaylistModule(IAudioService audioService, ILogger<PauseModule> log
         
         if (player.CurrentItem is null)
         {
-            await player.PlayAsync(tracks[0]).ConfigureAwait(false);
-            await player.Queue.InsertRangeAsync(0, tracks.Skip(1).Select(t => new TrackQueueItem(t))).ConfigureAwait(false);
+            await player.PlaySignalRAsync(tracks[0]).ConfigureAwait(false);
+            await player.InsertRangeSignalRAsync(0, tracks.Skip(1)).ConfigureAwait(false);
         }
         else
         {
-            await player.Queue.InsertRangeAsync(0, tracks.Select(t => new TrackQueueItem(t))).ConfigureAwait(false);
+            await player.InsertRangeSignalRAsync(0, tracks).ConfigureAwait(false);
         }
 
         await FollowupAsync($"🔈 Added **{name}** to queue").ConfigureAwait(false);

@@ -9,6 +9,7 @@ import SearchTrack from "@/components/dashboard/search/SearchTrack";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import InfoTooltip from "@/components/ui/info-tooltip";
 import SearchPlaylist from "@/components/dashboard/search/SearchPlaylist";
+import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
 
 export interface SearchTabProps {
     guildId: number
@@ -23,7 +24,11 @@ export default function SearchTab({guildId}: SearchTabProps) {
     const [albumCount, setAlbumCount] = useState(0)
     const [playlistCount, setPlaylistCount] = useState(0)
     const [activeTab, setActiveTab] = useState("tracks")
+    const [loading, setLoading] = useState(false)
+    
     const onSearch = async (query: string, _searchMode?: string) => {
+        setActiveTab("tracks")
+        setLoading(true)
         const response = await RequestSearch(guildId, query, _searchMode ?? searchMode)
         setSearchResponse(response)
         setQuery(query)
@@ -52,8 +57,7 @@ export default function SearchTab({guildId}: SearchTabProps) {
         } else {
             setActiveTab("tracks")
         }
-
-        console.log(response)
+        setLoading(false)
     }
 
     return (
@@ -72,7 +76,7 @@ export default function SearchTab({guildId}: SearchTabProps) {
                   onValueChange={setActiveTab}>
                 <div className="flex justify-center mt-3">
                     <TabsList>
-                        <TabsTrigger value="tracks" disabled={trackCount == 0}>Tracks ({trackCount})</TabsTrigger>
+                        <TabsTrigger value="tracks" disabled={trackCount == 0}>Songs ({trackCount})</TabsTrigger>
                         <TabsTrigger value="albums" disabled={albumCount == 0}>Albums ({albumCount})</TabsTrigger>
                         <TabsTrigger value="playlists" disabled={playlistCount == 0}>Playlists
                             ({playlistCount})</TabsTrigger>
@@ -81,12 +85,15 @@ export default function SearchTab({guildId}: SearchTabProps) {
                 <TabsContent value="tracks" className="w-full border-2 rounded-3xl h-full overflow-hidden pb-5">
                     <ScrollArea className="m-2 h-full overflow-hidden rounded-l-3xl">
                         <div className="space-y-1.5 overflow-auto">
-                            {searchResponse?.tracks?.length ? (
+                            {loading && Array.from({length: 20}).map((_, index) => (
+                                <QueuedSongSkeleton key={index}/>
+                            ))}
+                            {!loading && searchResponse?.tracks?.length ? (
                                 searchResponse.tracks.map((track, index) => (
-                                    <SearchTrack track={track} key={index}/>
+                                    <SearchTrack track={track} key={index} guildId={guildId}/>
                                 ))
-                            ) : query !== "" ? (
-                                <div>No results found</div>
+                            ) : !loading ? (
+                                <div className="text-center">No results found</div>
                             ) : <div/>}
                         </div>
                     </ScrollArea>
@@ -96,7 +103,7 @@ export default function SearchTab({guildId}: SearchTabProps) {
                         <div className="space-y-1.5 overflow-auto">
                             {searchResponse?.albums?.length ? (
                                 searchResponse.albums.map((album, index) => (
-                                    <SearchPlaylist playlist={album} key={index}/>
+                                    <SearchPlaylist playlist={album} key={index} guildId={guildId}/>
                                 ))
                             ) : query !== "" ? (
                                 <div>No results found</div>
@@ -109,7 +116,7 @@ export default function SearchTab({guildId}: SearchTabProps) {
                         <div className="space-y-1.5 overflow-auto">
                             {searchResponse?.playlists?.length ? (
                                 searchResponse.playlists.map((playlist, index) => (
-                                    <SearchPlaylist playlist={playlist} key={index}/>
+                                    <SearchPlaylist playlist={playlist} key={index} guildId={guildId}/>
                                 ))
                             ) : query !== "" ? (
                                 <div>No results found</div>
