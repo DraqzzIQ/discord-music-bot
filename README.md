@@ -44,6 +44,7 @@ MONGO_INITDB_ROOT_PASSWORD=password // Required, MongoDB Root Password
 ```
 NEXT_PUBLIC_REST_API_URL=http://localhost:8080/ // Required, REST API URL
 NEXT_PUBLIC_SIGNALR_API_URL=http://localhost:8080/ // Required, SignalR API URL
+NEXT_PUBLIC_BASE_URL=http://localhost:3000/ // Required, frontend base url
 ```
 
 Create folders for MongoDB and Lavalink data in the root directory with correct permissions.
