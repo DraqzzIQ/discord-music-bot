@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
     const { token } = params;
-    const url = new URL(process.env.NEXT_PUBLIC_BAS_URL ?? "http://127.0.0.1:3000/");
+    const url = new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "http://127.0.0.1:3000/");
 
     if (!token) {
         // Handle missing token (e.g., return an error response)
