@@ -6,11 +6,12 @@ import { Search } from "lucide-react"
 export interface SearchInputProps {
     onSearch: (query: string) => void,
     onChange: (query: string) => void,
-    placeholder?: string,    
+    placeholder?: string,
+    passedQuery?: string
 }
 
-export default function Component({ onSearch, onChange, placeholder = "Search..."}: SearchInputProps) {
-  const [query, setQuery] = useState('')
+export default function Component({ onSearch, onChange, placeholder = "Search...", passedQuery}: SearchInputProps) {
+  const [query, setQuery] = useState(passedQuery ?? "")
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

@@ -43,11 +43,12 @@ const searchMods = [
 
 export interface SearchSelectorProps {
     onSelect: (value: string) => void
+    passedValue?: string
 }
 
-export function SearchModeSelector({ onSelect }: SearchSelectorProps) {
+export function SearchModeSelector({ onSelect, passedValue }: SearchSelectorProps) {
     const [open, setOpen] = React.useState(false)
-    const [value, setValue] = React.useState(TrackSearchMode.Deezer.prefix)
+    const [value, setValue] = React.useState(passedValue ?? TrackSearchMode.Deezer.prefix)
 
     return (
         <Popover open={open} onOpenChange={setOpen}>

@@ -12,20 +12,22 @@ import SearchPlaylist from "@/components/dashboard/search/SearchPlaylist";
 import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
 
 export interface SearchTabProps {
-    guildId: number
+    guildId: number;
+    state: any;
+    setState: (state: any) => void;
 }
 
-export default function SearchTab({guildId}: SearchTabProps) {
-    const [searchResponse, setSearchResponse] = useState({} as SearchResponseDto | null)
-    const [searchMode, setSearchMode] = useState(TrackSearchMode.Deezer.prefix)
-    const [query, setQuery] = useState("")
-    const [tmpQuery, setTmpQuery] = useState("")
-    const [trackCount, setTrackCount] = useState(0)
-    const [albumCount, setAlbumCount] = useState(0)
-    const [playlistCount, setPlaylistCount] = useState(0)
-    const [activeTab, setActiveTab] = useState("tracks")
-    const [loading, setLoading] = useState(false)
-    
+export default function SearchTab({guildId, state, setState}: SearchTabProps) {
+    const [searchResponse, setSearchResponse] = useState(state?.searchResponse as SearchResponseDto | null)
+    const [searchMode, setSearchMode] = useState(state?.searchMode ?? TrackSearchMode.Deezer.prefix)
+    const [query, setQuery] = useState(state?.query ?? "")
+    const [tmpQuery, setTmpQuery] = useState(state?.tmpQuery ?? "")
+    const [trackCount, setTrackCount] = useState(state?.trackCount ?? 0)
+    const [albumCount, setAlbumCount] = useState(state?.albumCount ?? 0)
+    const [playlistCount, setPlaylistCount] = useState(state?.playlistCount ?? 0)
+    const [activeTab, setActiveTab] = useState(state?.activeTab ?? "tracks")
+    const [loading, setLoading] = useState(state?.loading ?? false)
+
     const onSearch = async (query: string, _searchMode?: string) => {
         setActiveTab("tracks")
         setLoading(true)
@@ -44,28 +46,49 @@ export default function SearchTab({guildId}: SearchTabProps) {
         }
 
         // if only 1 category has results, switch to that category
+        let activeTab = "tracks"
         if (response) {
-            if (response.tracks.length > 0 && !response.albums.length && !response.playlists.length) {
-                setActiveTab("tracks")
-            } else if (!response.tracks.length && response.albums.length > 0 && !response.playlists.length) {
-                setActiveTab("albums")
+            if (!response.tracks.length && response.albums.length > 0 && !response.playlists.length) {
+                activeTab = "albums"
             } else if (!response.tracks.length && !response.albums.length && response.playlists.length > 0) {
-                setActiveTab("playlists")
-            } else {
-                setActiveTab("tracks")
-            }
-        } else {
-            setActiveTab("tracks")
+                activeTab = "playlists"
+            } 
         }
+        setActiveTab(activeTab)
         setLoading(false)
+        
+        setState({
+            searchResponse: response,
+            searchMode: _searchMode ?? searchMode,
+            query: query,
+            tmpQuery: query,
+            trackCount: response?.tracks?.length ?? 0,
+            albumCount: response?.albums?.length ?? 0,
+            playlistCount: response?.playlists?.length ?? 0,
+            activeTab: activeTab,
+            loading: false,
+        })
     }
 
     return (
         <div className="w-full mt-2 h-full">
             <div className="flex justify-center items-center w-full space-x-1">
-                <SearchInput onSearch={onSearch} onChange={(query: string) => setTmpQuery(query)}
+                <SearchInput passedQuery={query} onSearch={onSearch} onChange={(query: string) => {
+                    setTmpQuery(query)
+                    setState({
+                        searchResponse: searchResponse,
+                        searchMode: searchMode,
+                        query: query,
+                        tmpQuery: query,
+                        trackCount: trackCount,
+                        albumCount: albumCount,
+                        playlistCount: playlistCount,
+                        activeTab: activeTab,
+                        loading: loading,
+                    })
+                }}
                              placeholder="What do you want play?"/>
-                <SearchModeSelector onSelect={async (value) => {
+                <SearchModeSelector passedValue={searchMode} onSelect={async (value) => {
                     setSearchMode(value);
                     await onSearch(tmpQuery, value)
                 }}/>
@@ -73,7 +96,20 @@ export default function SearchTab({guildId}: SearchTabProps) {
                              popoverContent="Choose the provider you want to search from or choose *Link* for links to playlists or songs."/>
             </div>
             <Tabs defaultValue="tracks" className="w-full px-2 pb-5 h-[calc(100%-88px)]" value={activeTab}
-                  onValueChange={setActiveTab}>
+                  onValueChange={async (value) => {
+                setActiveTab(value)
+                      setState({
+                            searchResponse: searchResponse,
+                            searchMode: searchMode,
+                            query: query,
+                            tmpQuery: tmpQuery,
+                            trackCount: trackCount,
+                            albumCount: albumCount,
+                            playlistCount: playlistCount,
+                            activeTab: value,
+                            loading: loading,
+                        })
+            }}>
                 <div className="flex justify-center mt-3">
                     <TabsList>
                         <TabsTrigger value="tracks" disabled={trackCount == 0}>Songs ({trackCount})</TabsTrigger>
