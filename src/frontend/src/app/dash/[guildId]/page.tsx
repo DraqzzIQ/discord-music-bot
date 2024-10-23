@@ -39,35 +39,35 @@ export default function Dash({params} : {params: {guildId: number}}) {
         });
     }
 
+    const handleUpdatePlayer = (payload: PlayerUpdatedDto) => {
+        let shouldUpdateQueue = payload.updateQueue;
+        setTrack(payload.currentTrack);
+        setPositionInSeconds(payload.positionInSeconds);
+        if (shouldUpdateQueue) setQueue(payload.queue);
+        setState(payload.state);
+        setLoading(false);
+    };
+
+    const handleUpdatePosition = (position: number) => {
+        setPositionInSeconds(position);
+    }
+
+    const registerEventHandlers = () => {
+        socketService.registerOnServerEvents('UpdatePlayer', handleUpdatePlayer);
+        socketService.registerOnServerEvents('UpdatePosition', handleUpdatePosition);
+    };
+
+    const fetchInitialData = async () => {
+        await socketService.invokeMethod('SubscribeToPlayer', params.guildId);
+        await socketService.invokeMethod('GetPlayerStatus', null);
+    };
+
+    const setupConnectionCallbacks = () => {
+        socketService.registerOnConnectedCallback(fetchInitialData);
+        socketService.registerOnReconnectedCallback(fetchInitialData);
+    };
+
     useEffect(() => {
-        const handleUpdatePlayer = (payload: PlayerUpdatedDto) => {
-            let shouldUpdateQueue = payload.updateQueue;
-            setTrack(payload.currentTrack);
-            setPositionInSeconds(payload.positionInSeconds);
-            if (shouldUpdateQueue) setQueue(payload.queue);
-            setState(payload.state);
-            setLoading(false);
-        };
-        
-        const handleUpdatePosition = (position: number) => {
-            setPositionInSeconds(position);
-        }
-
-        const registerEventHandlers = () => {
-            socketService.registerOnServerEvents('UpdatePlayer', handleUpdatePlayer);
-            socketService.registerOnServerEvents('UpdatePosition', handleUpdatePosition);
-        };
-
-        const fetchInitialData = async () => {
-            await socketService.invokeMethod('SubscribeToPlayer', params.guildId);
-            await socketService.invokeMethod('GetPlayerStatus', null);
-        };
-
-        const setupConnectionCallbacks = () => {
-            socketService.registerOnConnectedCallback(fetchInitialData);
-            socketService.registerOnReconnectedCallback(fetchInitialData);
-        };
-
         registerEventHandlers();
         setupConnectionCallbacks();
 

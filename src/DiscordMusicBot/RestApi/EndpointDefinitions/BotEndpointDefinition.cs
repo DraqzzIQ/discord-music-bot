@@ -432,6 +432,9 @@ public class BotEndpointDefinition : IEndpointDefinition
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
+        
+        if(string.IsNullOrWhiteSpace(request.Query))
+            return Results.NotFound();
 
         TrackSearchMode mode = request.SearchMode switch
         {
