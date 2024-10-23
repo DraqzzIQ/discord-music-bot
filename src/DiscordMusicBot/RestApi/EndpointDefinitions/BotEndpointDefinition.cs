@@ -39,9 +39,6 @@ public class BotEndpointDefinition : IEndpointDefinition
 {
     public void DefineEndpoints(WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
-            app.MapGet("/api/bot/test-auth", TestAuthAsync);
-
         app.MapGet("/api/bot/lyrics", GetLyricsAsync);
         app.MapGet("/api/bot/search", GetSearchAsync);
 
@@ -62,17 +59,6 @@ public class BotEndpointDefinition : IEndpointDefinition
 
     public void DefineServices(IServiceCollection services)
     {
-    }
-
-    [Authorize]
-    private async Task<IResult?> TestAuthAsync([AsParameters] BaseRequest request)
-    {
-        UserModel? user = await request.DbService.GetUserAsync(request.UserId).ConfigureAwait(false);
-        if (user is null)
-            return Results.NotFound("User not found");
-
-        //return Results.Ok($"GuildIds: {string.Join(',', user.Value.GuildIds)} UserId: {request.UserId}");
-        return Results.Ok("authenticated");
     }
 
     [Authorize]

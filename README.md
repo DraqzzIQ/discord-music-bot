@@ -44,19 +44,19 @@ MONGO_INITDB_ROOT_PASSWORD=password // Required, MongoDB Root Password
 ```
 NEXT_PUBLIC_REST_API_URL=http://localhost:8080/ // Required, REST API URL
 NEXT_PUBLIC_SIGNALR_API_URL=http://localhost:8080/ // Required, SignalR API URL
-NEXT_PUBLIC_BASE_URL=http://localhost:3000/ // Required, frontend base url
+NEXT_PUBLIC_BASE_URL=http://localhost:3000/ // Required, Frontend Base URL
 ```
 
 Create folders for MongoDB and Lavalink data in the root directory with correct permissions.
 - `db-data`
 - `lavalink`
-- `lavalink/plugins` make sure to set the correct permissions (user: 322, group: 322)
+- `lavalink/plugins` make sure to set the correct permissions (user: 322, group: 322) // `chown -R 322:322 lavalink/plugins`
 
 Define `lavalink/application.yml`
 
 example `application.yml` can be found [here](lavalink/example.application.yml)
 
-Lavalink needs to be configured with plugins:
+[Lavalink](https://github.com/lavalink-devs/Lavalink) needs to be configured with plugins:
 - [youtube-source](https://github.com/lavalink-devs/youtube-source)
 - [LavaSearch](https://github.com/topi314/LavaSearch)
 - [LavaSrc](https://github.com/topi314/LavaSrc)

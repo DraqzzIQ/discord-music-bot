@@ -53,26 +53,23 @@ export default function Dash({params} : {params: {guildId: number}}) {
             setPositionInSeconds(position);
         }
 
-        socketService.registerOnServerEvents('UpdatePlayer', handleUpdatePlayer);
-        socketService.registerOnServerEvents('UpdatePosition', handleUpdatePosition);
+        const registerEventHandlers = () => {
+            socketService.registerOnServerEvents('UpdatePlayer', handleUpdatePlayer);
+            socketService.registerOnServerEvents('UpdatePosition', handleUpdatePosition);
+        };
 
-        async function getPlayerStatus() {
-            await socketService.invokeMethod('GetPlayerStatus', null);
-        }
-
-        async function subscribeToPlayer() {
+        const fetchInitialData = async () => {
             await socketService.invokeMethod('SubscribeToPlayer', params.guildId);
-        }
+            await socketService.invokeMethod('GetPlayerStatus', null);
+        };
 
-        socketService.registerOnConnectedCallback(async () => {
-            await subscribeToPlayer();
-            await getPlayerStatus();
-        });
-        
-        socketService.registerOnReconnectedCallback(async () => {
-            await subscribeToPlayer();
-            await getPlayerStatus();
-        });
+        const setupConnectionCallbacks = () => {
+            socketService.registerOnConnectedCallback(fetchInitialData);
+            socketService.registerOnReconnectedCallback(fetchInitialData);
+        };
+
+        registerEventHandlers();
+        setupConnectionCallbacks();
 
         return () => {
             socketService.stopConnection();

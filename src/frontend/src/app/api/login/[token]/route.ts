@@ -16,6 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: { token: s
         secure: true,
         sameSite: 'strict',
         path: '/',
+        domain: url.hostname,
         // 6 months from now
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30 * 6)
     });

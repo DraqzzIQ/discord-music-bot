@@ -34,7 +34,7 @@ export default function LyricsTab({guildId, track}: LyricsTabProps) {
                     {loading &&
                         <LyricsSkeleton/>
                     }
-                    {!loading && lyrics &&
+                    {!loading &&
                         <div className="whitespace-pre-wrap">{lyrics ?? "No lyrics available for this song"}</div>
                     }
                 </ScrollArea>

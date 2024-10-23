@@ -2,14 +2,14 @@ import {GuildDto} from "@/dtos/GuildDto";
 import {SearchResponseDto} from "@/dtos/SearchResponseDto";
 import {PlayRequestDto} from "@/dtos/PlayRequestDto";
 
-// Helper function to make API requests with cookie authentication
+// make API requests with cookie authentication
 async function apiRequest(url: string, options: RequestInit = {}, parse: boolean = true): Promise<any> {
     const response = await fetch(process.env.NEXT_PUBLIC_REST_API_URL + url, {
         credentials: 'include',
         ...options,
     });
 
-    // check debug mode
+    // log if debug
     if (!response.ok && process.env.NODE_ENV === 'development') {
         console.log(`API request failed with status ${response.status} and body ${await response.text()} for URL ${url}`);
         return null;
@@ -24,13 +24,7 @@ async function apiRequest(url: string, options: RequestInit = {}, parse: boolean
     return text ? JSON.parse(text) : null;
 }
 
-export async function TestAuth():Promise<boolean> {
-    const data = await apiRequest('api/bot/test-auth')
-    return data == "authenticated";
-}
-
 export async function RequestGuilds():Promise<GuildDto[]> {
-    // read url from environment variable
     const data = await apiRequest('api/discord/guilds');
     
     return data.guilds.map((guild: any): GuildDto => ({
