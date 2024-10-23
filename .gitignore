@@ -1,4 +1,6 @@
 mongo.env
+bot.env
 lavalink/application.yml
 lavalink/plugins
 db-data
+frontend.iml

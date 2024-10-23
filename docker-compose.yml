@@ -3,17 +3,33 @@ services:
     image: bot:latest
     build:
       context: .
-      dockerfile: Bot/Dockerfile
+      dockerfile: src/DiscordMusicBot/Dockerfile
     restart: unless-stopped
     env_file:
-      - Bot/bot.env
+      - bot.env
     depends_on:
       - db
       - lavalink
     networks:
       - lavalink_net
       - db_net
-        
+      - bot_net
+    ports:
+      - "8080:8080"
+  
+  web-interface:
+    image: web-interface:latest
+    build:
+      context: src/frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - bot
+    networks:
+      - bot_net
+    ports:
+      - "4747:4747"
+
   db:
     image: mongo
     restart: unless-stopped
@@ -25,7 +41,7 @@ services:
       - db_net
     expose:
       - 27017
-      
+
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:latest-alpine
     restart: unless-stopped
@@ -36,9 +52,11 @@ services:
       - lavalink_net
     expose:
       - 2333
-        
+
 networks:
     lavalink_net:
       name: lavalink_net
     db_net:
       name: db_net
+    bot_net:
+      name: bot_net

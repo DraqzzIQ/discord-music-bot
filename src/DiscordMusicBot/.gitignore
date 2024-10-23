@@ -1,0 +1,9 @@
+.vs
+bin
+obj
+config.json
+LavaLink
+Properties
+.idea
+bot.env
+/DiscordMusicBot.sln.DotSettings.user
