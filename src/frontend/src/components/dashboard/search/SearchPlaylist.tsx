@@ -1,9 +1,10 @@
 import {PlaylistDto} from "@/dtos/PlaylistDto";
 import {Queue} from "@phosphor-icons/react";
-import {PlayIcon} from "lucide-react";
+import {Loader2, PlayIcon} from "lucide-react";
 import DefaultButton from "@/components/DefaultButton";
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu";
 import {RequestPlay} from "@/api/rest/apiService";
+import {useState} from "react";
 
 export interface SearchPlaylistProps {
     playlist: PlaylistDto,
@@ -11,25 +12,32 @@ export interface SearchPlaylistProps {
 }
 
 export default function SearchPlaylist({playlist, guildId}: SearchPlaylistProps) {
+    const [playLoading, setPlayLoading] = useState(false);
+    const [addToQueueLoading, setAddToQueueLoading] = useState(false);
+
     const handlePlay = async () => {
+        setPlayLoading(true);
         await RequestPlay(guildId, {
             isPlaylist: true,
             shouldPlay: true,
             playlistUrl: playlist.url,
             encodedPlaylistTracks: playlist.encodedTracks,
         });
+        setPlayLoading(false);
     }
-    
+
     const handleAddToQueue = async () => {
+        setAddToQueueLoading(true);
         await RequestPlay(guildId, {
             isPlaylist: true,
             shouldPlay: false,
             playlistUrl: playlist.url,
             encodedPlaylistTracks: playlist.encodedTracks,
         });
+        setAddToQueueLoading(false);
     }
-    
-    
+
+
     return (
         <ContextMenu>
             <ContextMenuTrigger>
@@ -56,11 +64,19 @@ export default function SearchPlaylist({playlist, guildId}: SearchPlaylistProps)
                         </div>
                     </div>
                     <div className="pr-5 flex space-x-4">
-                        <DefaultButton tooltipText="Play" onClick={handlePlay}>
-                            <PlayIcon size="22"/>
+                        <DefaultButton tooltipText="Play" onClick={handlePlay} disabled={playLoading}>
+                            {playLoading ?
+                                <Loader2 className="animate-spin h-[22px] w-[22px] text-primary"/>
+                                :
+                                <PlayIcon size="22"/>
+                            }
                         </DefaultButton>
-                        <DefaultButton tooltipText="Add to queue" onClick={handleAddToQueue}>
-                            <Queue size="22"/>
+                        <DefaultButton tooltipText="Add to queue" onClick={handleAddToQueue} disabled={addToQueueLoading}>
+                            {addToQueueLoading ?
+                                <Loader2 className="animate-spin h-[22px] w-[22px] text-primary"/>
+                                :
+                                <Queue size="22"/>
+                            }
                         </DefaultButton>
                     </div>
                 </div>

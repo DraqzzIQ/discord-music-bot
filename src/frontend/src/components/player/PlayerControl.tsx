@@ -1,7 +1,7 @@
 "use client";
 
 import React, {useEffect, useState} from "react";
-import {ChevronLeft, ChevronRight, PauseIcon, TriangleIcon} from "lucide-react";
+import {ChevronLeft, ChevronRight, Loader2, PauseIcon, TriangleIcon} from "lucide-react";
 import {Slider} from "@/components/ui/slider";
 import DefaultButton from "@/components/DefaultButton";
 import {Door, Queue, Stop} from "@phosphor-icons/react";
@@ -38,6 +38,12 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
     const [sliderValue, setSliderValue] = useState(positionInSeconds);
     const [currentTrack, setCurrentTrack] = useState(track);
     const [playerState, setPlayerState] = useState(state);
+    const [sliderLoading, setSliderLoading] = useState(false);
+    const [skipLoading, setSkipLoading] = useState(false);
+    const [rewindLoading, setRewindLoading] = useState(false);
+    const [pauseLoading, setPauseLoading] = useState(false);
+    const [stopLoading, setStopLoading] = useState(false);
+    const [leaveLoading, setLeaveLoading] = useState(false);
 
     useEffect(() => {
         setSliderValue(positionInSeconds);
@@ -58,61 +64,105 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
     };
     const handleSliderCommit = async (value: number[]) => {
         setSliderValue(value[0]);
+        setSliderLoading(true);
         await RequestSeek(guildId, value[0]);
+        setSliderLoading(false);
     };
 
     return (
-        <div className="flex flex-row justify-center items-center ml-2 mb-0.5 text-center border-t-2 mr-2 border-black mt-1 pt-2 dark:border-white">
-            {loading ? <div className="w-1/3"><QueuedSongSkeleton/> </div> :
-            <div className="flex flex-row space-x-3 w-1/3">
-                <img
-                    className="h-[60px] w-[60px] rounded-xl object-cover"
-                    src={currentTrack?.thumbnailUrl ?? '/bluray-disc-icon.svg'}
-                    onError={({currentTarget}) => {
-                        currentTarget.onerror = null; // prevents looping
-                        currentTarget.src = "/bluray-disc-icon.svg";
-                    }}
-                    alt='track icon'
-                />
-                <div className="space-y-2 w-full text-left">
-                    <div className="w-full truncate">
-                        <a href={currentTrack?.url} target="_blank" rel="noreferrer"
-                           className="hover:underline font-semibold text-xl">
-                            {currentTrack?.title ?? "No Track Playing"}
-                        </a>
+        <div
+            className="flex flex-row justify-center items-center ml-2 mb-0.5 text-center border-t-2 mr-2 border-black mt-1 pt-2 dark:border-white">
+            {loading ? <div className="w-1/3"><QueuedSongSkeleton/></div> :
+                <div className="flex flex-row space-x-3 w-1/3">
+                    <img
+                        className="h-[60px] w-[60px] rounded-xl object-cover"
+                        src={currentTrack?.thumbnailUrl ?? '/bluray-disc-icon.svg'}
+                        onError={({currentTarget}) => {
+                            currentTarget.onerror = null; // prevents looping
+                            currentTarget.src = "/bluray-disc-icon.svg";
+                        }}
+                        alt='track icon'
+                    />
+                    <div className="space-y-2 w-full text-left">
+                        <div className="w-full truncate">
+                            <a href={currentTrack?.url} target="_blank" rel="noreferrer"
+                               className="hover:underline font-semibold text-xl">
+                                {currentTrack?.title ?? "No Track Playing"}
+                            </a>
+                        </div>
+                        <div className="text-gray-400 truncate">{currentTrack?.author ?? "No Track Playing"}</div>
                     </div>
-                    <div className="text-gray-400 truncate">{currentTrack?.author ?? "No Track Playing"}</div>
                 </div>
-            </div>
             }
             <div className="felx flex-row w-1/3">
                 <div className="flex items-center justify-center">
-                    <DefaultButton tooltipText="Stop" onClick={() => RequestStop(guildId)} className="mr-2">
-                        <Stop className="w-8 h-8"/>
-                    </DefaultButton>
-                    <DefaultButton tooltipText="Previous" onClick={() => RequestRewind(guildId)}>
-                        <ChevronLeft className="w-10 h-10"/>
-                    </DefaultButton>
-                    <DefaultButton tooltipText="Play/Pause" onClick={
-                        () => {
-                            if(currentTrack === null) return;
-                            playerState === PlayerState.Playing ? RequestPause(guildId) : RequestResume(guildId);
-                        }
-                    }>
-                        {playerState === PlayerState.Playing ? <PauseIcon className="h-8 w-8"/> : <TriangleIcon className="h-8 w-8 rotate-90"/>}
-                    </DefaultButton>
-                    <DefaultButton tooltipText="Next" onClick={() => RequestSkip(guildId)}>
-                        <ChevronRight className="w-10 h-10"/>
-                    </DefaultButton>
-                    <DefaultButton tooltipText="Leave" onClick={() => RequestLeave(guildId)} className="ml-2">
-                        <Door className="w-8 h-8"/>
-                    </DefaultButton>
+                    {stopLoading ?
+                        <Loader2 className="animate-spin h-8 w-8 text-primary mr-2"/>
+                        :
+                        <DefaultButton tooltipText="Stop" onClick={async () => {
+                            setStopLoading(true)
+                            await RequestStop(guildId)
+                            setStopLoading(false)
+                        }} className="mr-2">
+                            <Stop className="w-8 h-8"/>
+                        </DefaultButton>
+                    }
+                    {rewindLoading ?
+                        <Loader2 className="animate-spin h-10 w-10 text-primary"/>
+                        :
+                        <DefaultButton tooltipText="Rewind" onClick={async () => {
+                            setRewindLoading(true)
+                            await RequestRewind(guildId)
+                            setRewindLoading(false)
+                        }}>
+                            <ChevronLeft className="w-10 h-10"/>
+                        </DefaultButton>
+                    }
+                    {pauseLoading ?
+                        <Loader2 className="animate-spin h-10 w-10 text-primary"/>
+                        :
+                        <DefaultButton tooltipText="Play/Pause" onClick={
+                            async () => {
+                                if (currentTrack === null) return;
+                                setPauseLoading(true);
+                                playerState === PlayerState.Playing ? await RequestPause(guildId) : await RequestResume(guildId);
+                                setPauseLoading(false);
+                            }
+                        }>
+                            {playerState === PlayerState.Playing ? <PauseIcon className="h-8 w-8"/> :
+                                <TriangleIcon className="h-8 w-8 rotate-90"/>}
+                        </DefaultButton>
+                    }
+                    {skipLoading ?
+                        <Loader2 className="animate-spin h-10 w-10 text-primary"/>
+                        :
+                        <DefaultButton tooltipText="Skip" onClick={async () => {
+                            setSkipLoading(true)
+                            await RequestSkip(guildId)
+                            setSkipLoading(false)
+                        }}>
+                            <ChevronRight className="w-10 h-10"/>
+                        </DefaultButton>
+                    }
+                    {leaveLoading ?
+                        <Loader2 className="animate-spin h-8 w-8 text-primary ml-2"/>
+                        :
+                        <DefaultButton tooltipText="Leave" onClick={async () => {
+                            setLeaveLoading(true)
+                            await RequestLeave(guildId)
+                            setLeaveLoading(false)
+                        }} className="ml-2">
+                            <Door className="w-8 h-8"/>
+                        </DefaultButton>
+                    }
                 </div>
                 <div className="flex justify-center">
                     <div className="flex items-center justify-center w-11/12 pb-2 select-none">
                         {formatDuration(sliderValue ?? 0)}
                         <div className="w-full min-w-56 px-4">
                             <Slider
+                                disabled={sliderLoading}
+                                loading={sliderLoading}
                                 value={[sliderValue ?? 0]}
                                 max={currentTrack?.durationInSeconds ?? 100}
                                 step={1}
