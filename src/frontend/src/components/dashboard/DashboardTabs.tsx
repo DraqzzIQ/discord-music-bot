@@ -30,7 +30,7 @@ export default function DashboardTabs({ guildId, track }: DashboardTabsProps) {
                     <LyricsTab guildId={guildId} track={track} state={lyricsState} setState={setLyricsState} />
                 </VerticalTabsContent>
                 <VerticalTabsContent value="playlists" className="flex-grow h-full border-2 rounded-3xl max-w-[calc(100%-100px)]">
-                    <PlaylistTab state={playlistState} setState={setPlaylistState} />
+                    <PlaylistTab />
                 </VerticalTabsContent>
             </VerticalTabs>
         </div>

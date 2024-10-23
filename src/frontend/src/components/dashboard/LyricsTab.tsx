@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import LyricsSkeleton from "@/components/skeletons/LyricsSkeleton";
 import {RequestLyrics} from "@/api/rest/apiService";
+import {TrackDto} from "@/dtos/TrackDto";
 
 export interface LyricsTabProps {
     guildId: number;
