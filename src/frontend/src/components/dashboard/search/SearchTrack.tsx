@@ -24,7 +24,8 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
             shouldPlay: true,
             encodedTrack: track.encodedTrack,
         });
-        setOnErrorPlaying(!success);
+        if (!success)
+            setOnErrorPlaying(false);
         setPlayLoading(false);
     }
 
@@ -35,7 +36,8 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
             shouldPlay: false,
             encodedTrack: track.encodedTrack,
         });
-        setOnErrorPlaying(!success);
+        if (!success)
+            setOnErrorPlaying(false);
         setAddToQueueLoading(false);
     }
 

@@ -82,13 +82,15 @@ export async function RequestSearch(guildId: number, query: string, searchMode: 
 }
 
 export async function RequestPlay(guildId: number, playRequest: PlayRequestDto):Promise<boolean> {
-    return await apiRequest(`api/bot/play?GuildId=${guildId}`, {
+    let response = await apiRequest(`api/bot/play?GuildId=${guildId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(playRequest),
-    }, false) == "";
+    }, false);
+
+    return response === "";
 }
 
 export async function RequestLeave(guildId: number):Promise<void> {

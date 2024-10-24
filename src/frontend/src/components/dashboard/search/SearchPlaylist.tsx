@@ -24,7 +24,8 @@ export default function SearchPlaylist({playlist, guildId, setOnErrorPlaying}: S
             playlistUrl: playlist.url,
             encodedPlaylistTracks: playlist.encodedTracks,
         });
-        setOnErrorPlaying(!success);
+        if (!success)
+            setOnErrorPlaying(false);
         setPlayLoading(false);
     }
 
@@ -36,7 +37,8 @@ export default function SearchPlaylist({playlist, guildId, setOnErrorPlaying}: S
             playlistUrl: playlist.url,
             encodedPlaylistTracks: playlist.encodedTracks,
         });
-        setOnErrorPlaying(!success);
+        if (!success)
+            setOnErrorPlaying(false);
         setAddToQueueLoading(false);
     }
 
@@ -74,7 +76,8 @@ export default function SearchPlaylist({playlist, guildId, setOnErrorPlaying}: S
                                 <PlayIcon size="22"/>
                             }
                         </DefaultButton>
-                        <DefaultButton tooltipText="Add to queue" onClick={handleAddToQueue} disabled={addToQueueLoading}>
+                        <DefaultButton tooltipText="Add to queue" onClick={handleAddToQueue}
+                                       disabled={addToQueueLoading}>
                             {addToQueueLoading ?
                                 <Loader2 className="animate-spin h-[22px] w-[22px] text-primary"/>
                                 :
