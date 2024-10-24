@@ -10,15 +10,15 @@ namespace DiscordMusicBot.Modules;
 public class JoinModule(IAudioService audioService, ILogger<LoopModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
-    ///     Loops the current track asynchronously.
+    ///     Joins the voice channel.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
     [SlashCommand("join", description: "Joins the voice channel.", runMode: RunMode.Async)]
-    public async Task LoopAsync()
+    public async Task JoinAsync()
     {
         await DeferAsync().ConfigureAwait(false);
         
-        var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
+        var player = await GetPlayerAsync(connectToVoiceChannel: true, updatePlayer: true).ConfigureAwait(false);
         if(player is null)
         {
             return;

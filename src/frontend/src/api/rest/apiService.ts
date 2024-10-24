@@ -81,14 +81,14 @@ export async function RequestSearch(guildId: number, query: string, searchMode: 
     return await apiRequest(`api/bot/search?GuildId=${guildId}&query=${urlEncodedQuery}&searchMode=${searchMode}`, { method: 'GET' });
 }
 
-export async function RequestPlay(guildId: number, playRequest: PlayRequestDto):Promise<any> {
+export async function RequestPlay(guildId: number, playRequest: PlayRequestDto):Promise<boolean> {
     return await apiRequest(`api/bot/play?GuildId=${guildId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(playRequest),
-    });
+    }, false) == "";
 }
 
 export async function RequestLeave(guildId: number):Promise<void> {

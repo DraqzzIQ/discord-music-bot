@@ -56,7 +56,7 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
     /// <returns>
     ///     a task that represents the asynchronous operation. The task result is the lavalink player.
     /// </returns>
-    protected async ValueTask<SignalRPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true)
+    protected async ValueTask<SignalRPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true, bool updatePlayer = false)
     {
         var retrieveOptions = new PlayerRetrieveOptions(
             ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
@@ -65,19 +65,23 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
             .RetrieveAsync(Context, playerFactory: CustomQueuedPlayerFactory.CustomQueued, new SignalRPlayerOptions {HubContext = _hubContext}, retrieveOptions)
             .ConfigureAwait(false);
 
-        if (!result.IsSuccess)
+        if (result.IsSuccess)
         {
-            var errorMessage = result.Status switch
-            {
-                PlayerRetrieveStatus.UserNotInVoiceChannel => "You are not connected to a voice channel.",
-                PlayerRetrieveStatus.BotNotConnected => "The bot is currently not connected.",
-                _ => "Unknown error.",
-            };
-
-            await FollowupAsync(errorMessage).ConfigureAwait(false);
-            return null;
+            SignalRPlayer player = result.Player;
+            if (updatePlayer)
+                await player.UpdatePlayerAsync();
+            return player;
         }
+        
+        var errorMessage = result.Status switch
+        {
+            PlayerRetrieveStatus.UserNotInVoiceChannel => "You are not connected to a voice channel.",
+            PlayerRetrieveStatus.BotNotConnected => "The bot is currently not connected.",
+            _ => "Unknown error.",
+        };
 
-        return result.Player;
+        await FollowupAsync(errorMessage).ConfigureAwait(false);
+        return null;
+
     }
 }

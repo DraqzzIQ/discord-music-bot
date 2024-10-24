@@ -149,7 +149,7 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
         await UpdatePlayerAsync(updatedPositionInSeconds: 0).ConfigureAwait(false);
     }
 
-    private async ValueTask UpdatePlayerAsync(bool updateQueue = false, ITrackQueueItem? updatedTrack = null,
+    public async ValueTask UpdatePlayerAsync(bool updateQueue = false, ITrackQueueItem? updatedTrack = null,
         int? updatedPositionInSeconds = null, ITrackQueue? updatedQueue = null, PlayerState? updatedState = null)
     {
         ITrackQueue queue = updatedQueue ?? Queue;
