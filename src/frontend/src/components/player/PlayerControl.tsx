@@ -13,7 +13,8 @@ import {
     RequestResume,
     RequestRewind,
     RequestSeek,
-    RequestSkip, RequestStop
+    RequestSkip,
+    RequestStop
 } from "@/api/rest/apiService";
 import {PlayerState} from "@/datatypes/PlayerState";
 import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
@@ -97,9 +98,9 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
             <div className="felx flex-row w-1/3">
                 <div className="flex items-center justify-center">
                     {stopLoading ?
-                        <Loader2 className="animate-spin h-8 w-8 text-primary mr-2"/>
+                        <Loader2 className="animate-spin h-9 w-9 text-primary mr-2"/>
                         :
-                        <DefaultButton tooltipText="Stop" onClick={async () => {
+                        <DefaultButton disabled={playerState == PlayerState.Destroyed} tooltipText="Stop" onClick={async () => {
                             setStopLoading(true)
                             await RequestStop(guildId)
                             setStopLoading(false)
@@ -108,9 +109,9 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                         </DefaultButton>
                     }
                     {rewindLoading ?
-                        <Loader2 className="animate-spin h-10 w-10 text-primary"/>
+                        <Loader2 className="animate-spin h-10 w-10 text-primary mx-1"/>
                         :
-                        <DefaultButton tooltipText="Rewind" onClick={async () => {
+                        <DefaultButton disabled={currentTrack === null} tooltipText="Rewind" onClick={async () => {
                             setRewindLoading(true)
                             await RequestRewind(guildId)
                             setRewindLoading(false)
@@ -121,9 +122,8 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                     {pauseLoading ?
                         <Loader2 className="animate-spin h-10 w-10 text-primary"/>
                         :
-                        <DefaultButton tooltipText="Play/Pause" onClick={
+                        <DefaultButton disabled={currentTrack === null} tooltipText="Play/Pause" onClick={
                             async () => {
-                                if (currentTrack === null) return;
                                 setPauseLoading(true);
                                 playerState === PlayerState.Playing ? await RequestPause(guildId) : await RequestResume(guildId);
                                 setPauseLoading(false);
@@ -134,9 +134,9 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                         </DefaultButton>
                     }
                     {skipLoading ?
-                        <Loader2 className="animate-spin h-10 w-10 text-primary"/>
+                        <Loader2 className="animate-spin h-10 w-10 text-primary mx-1"/>
                         :
-                        <DefaultButton tooltipText="Skip" onClick={async () => {
+                        <DefaultButton disabled={currentTrack === null} tooltipText="Skip" onClick={async () => {
                             setSkipLoading(true)
                             await RequestSkip(guildId)
                             setSkipLoading(false)
@@ -145,9 +145,9 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                         </DefaultButton>
                     }
                     {leaveLoading ?
-                        <Loader2 className="animate-spin h-8 w-8 text-primary ml-2"/>
+                        <Loader2 className="animate-spin h-9 w-9 text-primary ml-2"/>
                         :
-                        <DefaultButton tooltipText="Leave" onClick={async () => {
+                        <DefaultButton disabled={playerState == PlayerState.Destroyed} tooltipText="Leave" onClick={async () => {
                             setLeaveLoading(true)
                             await RequestLeave(guildId)
                             setLeaveLoading(false)
@@ -161,7 +161,7 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
                         {formatDuration(sliderValue ?? 0)}
                         <div className="w-full min-w-56 px-4">
                             <Slider
-                                disabled={sliderLoading}
+                                disabled={sliderLoading || currentTrack === null}
                                 loading={sliderLoading}
                                 value={[sliderValue ?? 0]}
                                 max={currentTrack?.durationInSeconds ?? 100}

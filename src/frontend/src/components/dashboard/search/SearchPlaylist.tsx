@@ -8,32 +8,35 @@ import {useState} from "react";
 
 export interface SearchPlaylistProps {
     playlist: PlaylistDto,
-    guildId: number
+    guildId: number,
+    setOnErrorPlaying: (value: boolean) => void
 }
 
-export default function SearchPlaylist({playlist, guildId}: SearchPlaylistProps) {
+export default function SearchPlaylist({playlist, guildId, setOnErrorPlaying}: SearchPlaylistProps) {
     const [playLoading, setPlayLoading] = useState(false);
     const [addToQueueLoading, setAddToQueueLoading] = useState(false);
 
     const handlePlay = async () => {
         setPlayLoading(true);
-        await RequestPlay(guildId, {
+        let success: boolean = await RequestPlay(guildId, {
             isPlaylist: true,
             shouldPlay: true,
             playlistUrl: playlist.url,
             encodedPlaylistTracks: playlist.encodedTracks,
         });
+        setOnErrorPlaying(!success);
         setPlayLoading(false);
     }
 
     const handleAddToQueue = async () => {
         setAddToQueueLoading(true);
-        await RequestPlay(guildId, {
+        let success: boolean = await RequestPlay(guildId, {
             isPlaylist: true,
             shouldPlay: false,
             playlistUrl: playlist.url,
             encodedPlaylistTracks: playlist.encodedTracks,
         });
+        setOnErrorPlaying(!success);
         setAddToQueueLoading(false);
     }
 

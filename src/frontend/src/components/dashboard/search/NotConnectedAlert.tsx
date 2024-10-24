@@ -3,7 +3,7 @@ import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import React, {useEffect, useState} from "react";
 import {Progress} from "@/components/ui/progress";
 
-export function LoginFailedAlert() {
+export function NotConnectedAlert() {
     const [visible, setVisible] = useState(true);
     const [progress, setProgress] = useState(100);
 
@@ -31,8 +31,8 @@ export function LoginFailedAlert() {
                     <div className="flex items-center">
                         <ExclamationTriangleIcon className="h-4 w-4"/>
                         <div className="ml-2">
-                            <AlertTitle>Login Failed</AlertTitle>
-                            <AlertDescription>Please try again.</AlertDescription>
+                            <AlertTitle>No voice channel</AlertTitle>
+                            <AlertDescription>Please connect to a voice channel the bot can access and try again.</AlertDescription>
                         </div>
                     </div>
                     <button onClick={() => setVisible(false)}

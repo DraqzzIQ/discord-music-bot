@@ -9,30 +9,33 @@ import {useState} from "react";
 
 export interface SearchTrackProps {
     track: TrackDto,
-    guildId: number
+    guildId: number,
+    setOnErrorPlaying: (value: boolean) => void
 }
 
-export default function SearchTrack({track, guildId}: SearchTrackProps) {
+export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchTrackProps) {
     const [playLoading, setPlayLoading] = useState(false);
     const [addToQueueLoading, setAddToQueueLoading] = useState(false);
 
     const handlePlay = async () => {
         setPlayLoading(true);
-        await RequestPlay(guildId, {
+        let success: boolean = await RequestPlay(guildId, {
             isPlaylist: false,
             shouldPlay: true,
             encodedTrack: track.encodedTrack,
         });
+        setOnErrorPlaying(!success);
         setPlayLoading(false);
     }
 
     const handleAddToQueue = async () => {
         setAddToQueueLoading(true);
-        await RequestPlay(guildId, {
+        let success: boolean = await RequestPlay(guildId, {
             isPlaylist: false,
             shouldPlay: false,
             encodedTrack: track.encodedTrack,
         });
+        setOnErrorPlaying(!success);
         setAddToQueueLoading(false);
     }
 

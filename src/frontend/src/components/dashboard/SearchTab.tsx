@@ -10,6 +10,7 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import InfoTooltip from "@/components/ui/info-tooltip";
 import SearchPlaylist from "@/components/dashboard/search/SearchPlaylist";
 import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
+import {NotConnectedAlert} from "@/components/dashboard/search/NotConnectedAlert";
 
 export interface SearchTabProps {
     guildId: number;
@@ -27,6 +28,8 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
     const [playlistCount, setPlaylistCount] = useState(state?.playlistCount ?? 0)
     const [activeTab, setActiveTab] = useState(state?.activeTab ?? "tracks")
     const [loading, setLoading] = useState(state?.loading ?? false)
+    const [errorPlaying, setErrorPlaying] = useState(false);
+    const [forceRerender, setForceRerender] = useState(0);
 
     const onSearch = async (query: string, _searchMode?: string) => {
         setActiveTab("tracks")
@@ -52,11 +55,11 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                 activeTab = "albums"
             } else if (!response.tracks.length && !response.albums.length && response.playlists.length > 0) {
                 activeTab = "playlists"
-            } 
+            }
         }
         setActiveTab(activeTab)
         setLoading(false)
-        
+
         setState({
             searchResponse: response,
             searchMode: _searchMode ?? searchMode,
@@ -72,6 +75,7 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
 
     return (
         <div className="w-full mt-2 h-full">
+            {errorPlaying && <NotConnectedAlert key={forceRerender}/>}
             <div className="flex justify-center items-center w-full space-x-1">
                 <SearchInput passedQuery={query} onSearch={onSearch} onChange={(query: string) => {
                     setTmpQuery(query)
@@ -97,19 +101,19 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
             </div>
             <Tabs defaultValue="tracks" className="w-full px-2 pb-5 h-[calc(100%-88px)]" value={activeTab}
                   onValueChange={async (value) => {
-                setActiveTab(value)
+                      setActiveTab(value)
                       setState({
-                            searchResponse: searchResponse,
-                            searchMode: searchMode,
-                            query: query,
-                            tmpQuery: tmpQuery,
-                            trackCount: trackCount,
-                            albumCount: albumCount,
-                            playlistCount: playlistCount,
-                            activeTab: value,
-                            loading: loading,
-                        })
-            }}>
+                          searchResponse: searchResponse,
+                          searchMode: searchMode,
+                          query: query,
+                          tmpQuery: tmpQuery,
+                          trackCount: trackCount,
+                          albumCount: albumCount,
+                          playlistCount: playlistCount,
+                          activeTab: value,
+                          loading: loading,
+                      })
+                  }}>
                 <div className="flex justify-center mt-3">
                     <TabsList>
                         <TabsTrigger value="tracks" disabled={trackCount == 0}>Songs ({trackCount})</TabsTrigger>
@@ -126,7 +130,11 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                             ))}
                             {!loading && searchResponse?.tracks?.length ? (
                                 searchResponse.tracks.map((track, index) => (
-                                    <SearchTrack track={track} key={index} guildId={guildId}/>
+                                    <SearchTrack track={track} key={index} guildId={guildId}
+                                                 setOnErrorPlaying={() => {
+                                                     setErrorPlaying(true);
+                                                     setForceRerender(prev => prev + 1);
+                                                 }}/>
                                 ))
                             ) : !loading ? (
                                 <div className="text-center">No results found</div>
@@ -139,7 +147,11 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                         <div className="space-y-1.5 overflow-auto">
                             {searchResponse?.albums?.length ? (
                                 searchResponse.albums.map((album, index) => (
-                                    <SearchPlaylist playlist={album} key={index} guildId={guildId}/>
+                                    <SearchPlaylist playlist={album} key={index} guildId={guildId}
+                                                    setOnErrorPlaying={() => {
+                                                        setErrorPlaying(true);
+                                                        setForceRerender(prev => prev + 1);
+                                                    }}/>
                                 ))
                             ) : query !== "" ? (
                                 <div>No results found</div>
@@ -152,7 +164,11 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                         <div className="space-y-1.5 overflow-auto">
                             {searchResponse?.playlists?.length ? (
                                 searchResponse.playlists.map((playlist, index) => (
-                                    <SearchPlaylist playlist={playlist} key={index} guildId={guildId}/>
+                                    <SearchPlaylist playlist={playlist} key={index} guildId={guildId}
+                                                    setOnErrorPlaying={() => {
+                                                        setErrorPlaying(true);
+                                                        setForceRerender(prev => prev + 1);
+                                                    }}/>
                                 ))
                             ) : query !== "" ? (
                                 <div>No results found</div>

@@ -537,10 +537,7 @@ public class BotEndpointDefinition : IEndpointDefinition
                     .JoinAsync(guildId, user.VoiceChannel.Id, CustomQueuedPlayerFactory.CustomQueued, options)
                     .ConfigureAwait(false);
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         return player;
