@@ -1,7 +1,7 @@
 "use client";
 
 import PlayerControl from "@/components/player/PlayerControl";
-import React, {useEffect} from "react";
+import React, { useEffect, use } from "react";
 import {socketService} from "@/api/signalr/socket";
 import {PlayerUpdatedDto} from "@/dtos/PlayerUpdatedDto";
 import {TrackDto} from "@/dtos/TrackDto";
@@ -11,14 +11,15 @@ import SongQueue from "@/components/queue/SongQueue";
 import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
 
-export default function Dash({params} : {params: {guildId: number}}) {
+export default function Dash(props: {params: Promise<{guildId: number}>}) {
+    const params = use(props.params);
     const [showQueue, setShowQueue] = React.useState(true);
     const [track, setTrack] = React.useState<TrackDto | null>(null);
     const [positionInSeconds, setPositionInSeconds] = React.useState<number>(0);
     const [queue, setQueue] = React.useState<TrackDto[]>([]);
     const [state, setState] = React.useState<PlayerState>(PlayerState.Destroyed);
     const [loading, setLoading] = React.useState(true);
-    
+
     const handleReorder = async (sourceIndex: number, destinationIndex: number) => {
         const reorderedQueue = Array.from(queue);
         const [movedItem] = reorderedQueue.splice(sourceIndex, 1);
@@ -29,7 +30,7 @@ export default function Dash({params} : {params: {guildId: number}}) {
     const handleRemove = (index: number) => {
         setQueue(prevQueue => prevQueue.filter((_, i) => i !== index));
     }
-    
+
     const handleSkipTo = (index: number) => {
         if(index === 0) return;
         setQueue(prevQueue => {
