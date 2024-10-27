@@ -35,54 +35,54 @@ export async function RequestGuilds():Promise<GuildDto[]> {
 }
 
 export async function RequestRewind(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/rewind?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/rewind?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestSkip(guildId: number, index: number = 0):Promise<void> {
-    await apiRequest(`api/bot/skip?GuildId=${guildId}&Index=${index}`, { method: 'POST' });
+    await apiRequest(`api/player/skip?GuildId=${guildId}&Index=${index}`, { method: 'POST' });
 }
 
 export async function RequestPause(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/pause?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/pause?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestResume(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/resume?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/resume?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestSeek(guildId: number, position: number):Promise<void> {
-    await apiRequest(`api/bot/position?GuildId=${guildId}&positionInSeconds=${position}`, {method: 'POST' });
+    await apiRequest(`api/player/position?GuildId=${guildId}&positionInSeconds=${position}`, {method: 'POST' });
 }
 
 export async function RequestShuffle(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/shuffle?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/shuffle?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestClear(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/clear?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/clear?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestDeduplicate(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/deduplicate?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/deduplicate?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestRemove(guildId: number, index: number):Promise<void> {
-    await apiRequest(`api/bot/remove?GuildId=${guildId}&index=${index}`, { method: 'POST' });
+    await apiRequest(`api/player/remove?GuildId=${guildId}&index=${index}`, { method: 'POST' });
 }
 
 export async function RequestReorder(guildId: number, sourceIndex: number, destinationIndex: number):Promise<void> {
-    await apiRequest(`api/bot/reorder?GuildId=${guildId}&sourceIndex=${sourceIndex}&destinationIndex=${destinationIndex}`, {
+    await apiRequest(`api/player/reorder?GuildId=${guildId}&sourceIndex=${sourceIndex}&destinationIndex=${destinationIndex}`, {
         method: 'POST',
     });
 }
 
 export async function RequestSearch(guildId: number, query: string, searchMode: string):Promise<SearchResponseDto | null> {
     const urlEncodedQuery = encodeURIComponent(query);
-    return await apiRequest(`api/bot/search?GuildId=${guildId}&query=${urlEncodedQuery}&searchMode=${searchMode}`, { method: 'GET' });
+    return await apiRequest(`api/player/search?GuildId=${guildId}&query=${urlEncodedQuery}&searchMode=${searchMode}`, { method: 'GET' });
 }
 
 export async function RequestPlay(guildId: number, playRequest: PlayRequestDto):Promise<boolean> {
-    let response = await apiRequest(`api/bot/play?GuildId=${guildId}`, {
+    let response = await apiRequest(`api/player/play?GuildId=${guildId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -94,13 +94,13 @@ export async function RequestPlay(guildId: number, playRequest: PlayRequestDto):
 }
 
 export async function RequestLeave(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/leave?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/leave?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestStop(guildId: number):Promise<void> {
-    await apiRequest(`api/bot/stop?GuildId=${guildId}`, { method: 'POST' });
+    await apiRequest(`api/player/stop?GuildId=${guildId}`, { method: 'POST' });
 }
 
 export async function RequestLyrics(guildId: number):Promise<any> {
-    return await apiRequest(`api/bot/lyrics?GuildId=${guildId}`, { method: 'GET' });
+    return await apiRequest(`api/player/lyrics?GuildId=${guildId}`, { method: 'GET' });
 }

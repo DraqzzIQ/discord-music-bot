@@ -35,26 +35,26 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace DiscordMusicBot.RestApi.EndpointDefinitions;
 
-public class BotEndpointDefinition : IEndpointDefinition
+public class PlayerEndpointDefinition : IEndpointDefinition
 {
     public void DefineEndpoints(WebApplication app)
     {
-        app.MapGet("/api/bot/lyrics", GetLyricsAsync);
-        app.MapGet("/api/bot/search", GetSearchAsync);
+        app.MapGet("/api/player/lyrics", GetLyricsAsync);
+        app.MapGet("/api/player/search", GetSearchAsync);
 
-        app.MapPost("/api/bot/position", UpdatePositionAsync);
-        app.MapPost("/api/bot/reorder", ReorderQueueAsync);
-        app.MapPost("/api/bot/remove", RemoveFromQueueAsync);
-        app.MapPost("/api/bot/clear", ClearQueueAsync);
-        app.MapPost("/api/bot/skip", SkipTrackAsync);
-        app.MapPost("/api/bot/rewind", RewindTrackAsync);
-        app.MapPost("/api/bot/stop", StopAsync);
-        app.MapPost("/api/bot/resume", ResumeAsync);
-        app.MapPost("/api/bot/pause", PauseAsync);
-        app.MapPost("/api/bot/shuffle", ShuffleQueueAsync);
-        app.MapPost("/api/bot/deduplicate", DeduplicateQueueAsync);
-        app.MapPost("/api/bot/play", PlayTrackAsync);
-        app.MapPost("/api/bot/leave", LeaveAsync);
+        app.MapPost("/api/player/position", UpdatePositionAsync);
+        app.MapPost("/api/player/reorder", ReorderQueueAsync);
+        app.MapPost("/api/player/remove", RemoveFromQueueAsync);
+        app.MapPost("/api/player/clear", ClearQueueAsync);
+        app.MapPost("/api/player/skip", SkipTrackAsync);
+        app.MapPost("/api/player/rewind", RewindTrackAsync);
+        app.MapPost("/api/player/stop", StopAsync);
+        app.MapPost("/api/player/resume", ResumeAsync);
+        app.MapPost("/api/player/pause", PauseAsync);
+        app.MapPost("/api/player/shuffle", ShuffleQueueAsync);
+        app.MapPost("/api/player/deduplicate", DeduplicateQueueAsync);
+        app.MapPost("/api/player/play", PlayTrackAsync);
+        app.MapPost("/api/player/leave", LeaveAsync);
     }
 
     public void DefineServices(IServiceCollection services)
