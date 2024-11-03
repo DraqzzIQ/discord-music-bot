@@ -41,9 +41,10 @@ public sealed class WebPlayerModule(
         {
             UserModel user = new()
             {
-                GuildIds = new[] { Context.Guild.Id },
+                GuildIds = [Context.Guild.Id],
                 UserId = Context.User.Id,
-                Token = token
+                Token = token,
+                PinnedPlaylists = []
             };
 
             await dbService.AddUserAsync(user).ConfigureAwait(false);

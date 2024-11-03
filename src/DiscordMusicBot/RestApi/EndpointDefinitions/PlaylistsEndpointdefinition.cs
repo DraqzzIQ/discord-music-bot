@@ -62,7 +62,7 @@ public class PlaylistsEndpointdefinition : BaseEndpointDefinition, IEndpointDefi
             OwnerAvatarUrl = userProps[index].avatarUrl,
             IsPublic = p.IsPublic,
             IsOwn = p.OwnerId == request.UserId,
-            IsPinned = user.Value.PinnedPlaylists.Contains(p.Id),
+            IsPinned = user?.PinnedPlaylists?.Contains(p.Id) ?? false,
             PreviewUrls = p.Tracks.Take(4).Select(s => s.ArtworkUri).ToList()
         }).ToList();
 
