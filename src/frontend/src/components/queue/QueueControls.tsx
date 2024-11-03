@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import DefaultButton from "@/components/DefaultButton";
-import {Loader2, MenuIcon, Shuffle, Trash2} from "lucide-react";
+import {Loader2, MenuIcon, Shuffle, TrashIcon} from "lucide-react";
 import {RequestClear, RequestDeduplicate, RequestShuffle} from "@/api/rest/apiService";
 
 
@@ -52,7 +52,7 @@ const QueueControls: React.FC<QueueControlsProps> = ({guildId}) => {
                     {clearLoading ?
                         <Loader2 className="w-5 h-5 mr-2 animate-spin text-primary"/>
                         :
-                        <Trash2 className="w-5 h-5 mr-2"/>
+                        <TrashIcon className="w-5 h-5 mr-2"/>
                     }
                     Clear
                 </DefaultButton>

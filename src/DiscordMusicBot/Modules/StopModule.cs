@@ -6,21 +6,22 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
-public sealed class StopModule(IAudioService audioService, ILogger<StopModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
+
+public sealed class StopModule(
+    IAudioService audioService,
+    ILogger<StopModule> logger,
+    IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Stops the current track asynchronously.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
-    [SlashCommand("stop", description: "Stops the current track", runMode: RunMode.Async)]
+    [SlashCommand("stop", "Stops the current track", runMode: RunMode.Async)]
     public async Task Stop()
     {
-        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
+        var player = await GetPlayerAsync(false).ConfigureAwait(false);
 
-        if (player is null)
-        {
-            return;
-        }
+        if (player is null) return;
 
         if (player.CurrentItem is null)
         {

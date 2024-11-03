@@ -2,7 +2,7 @@ using MongoDB.Bson;
 
 namespace DiscordMusicBot.Models;
 
-public struct PlaylistModel
+public class PlaylistModel
 {
     public ObjectId Id { get; set; }
     public string Name { get; set; }

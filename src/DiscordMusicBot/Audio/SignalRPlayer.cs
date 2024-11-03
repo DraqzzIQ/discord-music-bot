@@ -1,7 +1,7 @@
 using DiscordMusicBot.Dtos;
+using DiscordMusicBot.Extensions;
 using DiscordMusicBot.SignalR.Clients;
 using DiscordMusicBot.SignalR.Hubs;
-using DiscordMusicBot.Extensions;
 using Lavalink4NET.InactivityTracking.Players;
 using Lavalink4NET.InactivityTracking.Trackers;
 using Lavalink4NET.Players;
@@ -23,15 +23,36 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
         Task.Run(UpdateLoopAsync);
     }
 
+    public ValueTask NotifyPlayerActiveAsync(PlayerTrackingState state, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return default;
+    }
+
+    public async ValueTask NotifyPlayerInactiveAsync(PlayerTrackingState state,
+        CancellationToken cancellationToken = default)
+    {
+        // This method is called when the player reached the inactivity deadline.
+        // For example: All users in the voice channel left and the player was inactive for longer than 30 seconds.
+        cancellationToken.ThrowIfCancellationRequested();
+        await UpdatePlayerDisconnectedAsync().ConfigureAwait(false);
+    }
+
+    public ValueTask NotifyPlayerTrackedAsync(PlayerTrackingState state, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return default;
+    }
+
     public async ValueTask<int> PlaySignalRAsync(LavalinkTrack track, bool enqueue = true,
         TrackPlayProperties properties = default,
         CancellationToken cancellationToken = default)
     {
-        int index = await PlayAsync(track, enqueue, properties, cancellationToken).ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        var index = await PlayAsync(track, enqueue, properties, cancellationToken).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
         return index;
     }
-    
+
     public async ValueTask DisconnectSignalRAsync(CancellationToken cancellationToken = default)
     {
         await DisconnectAsync(cancellationToken).ConfigureAwait(false);
@@ -43,15 +64,15 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
     {
         await Queue.AddRangeAsync(tracks.Select(t => new TrackQueueItem(t)).ToArray(), cancellationToken)
             .ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
     }
-    
+
     public async ValueTask InsertRangeSignalRAsync(int index, IEnumerable<LavalinkTrack> tracks,
         CancellationToken cancellationToken = default)
     {
         await Queue.InsertRangeAsync(index, tracks.Select(t => new TrackQueueItem(t)).ToArray(), cancellationToken)
             .ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
     }
 
     public async ValueTask SkipSignalRAsync(int count = 1, CancellationToken cancellationToken = default)
@@ -93,19 +114,19 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
     public async ValueTask ClearQueueSignalRAsync(CancellationToken cancellationToken = default)
     {
         await Queue.ClearAsync(cancellationToken).ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
     }
 
     public async ValueTask ShuffleQueueSignalRAsync(CancellationToken cancellationToken = default)
     {
         await Queue.ShuffleAsync(cancellationToken).ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
     }
 
     public async ValueTask DeduplicateQueueSignalRAsync(CancellationToken cancellationToken = default)
     {
         await Queue.DistinctAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
     }
 
     public async ValueTask<bool> RemoveAtSignalRAsync(int index, CancellationToken cancellationToken = default)
@@ -114,7 +135,7 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
             return false;
 
         await Queue.RemoveAtAsync(index, cancellationToken).ConfigureAwait(false);
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
         return true;
     }
 
@@ -125,11 +146,11 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
             destinationIndex >= Queue.Count)
             return false;
 
-        ITrackQueueItem item = Queue.ElementAt(sourceIndex);
+        var item = Queue.ElementAt(sourceIndex);
         await Queue.RemoveAtAsync(sourceIndex, cancellationToken).ConfigureAwait(false);
         await Queue.InsertAsync(destinationIndex, item, cancellationToken).ConfigureAwait(false);
 
-        await UpdatePlayerAsync(updateQueue: true).ConfigureAwait(false);
+        await UpdatePlayerAsync(true).ConfigureAwait(false);
         return true;
     }
 
@@ -152,24 +173,24 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
     public async ValueTask UpdatePlayerAsync(bool updateQueue = false, ITrackQueueItem? updatedTrack = null,
         int? updatedPositionInSeconds = null, ITrackQueue? updatedQueue = null, PlayerState? updatedState = null)
     {
-        ITrackQueue queue = updatedQueue ?? Queue;
-        ITrackQueueItem? currentItem = updatedTrack ?? CurrentItem;
-        int positionInSeconds = updatedPositionInSeconds ??
+        var queue = updatedQueue ?? Queue;
+        var currentItem = updatedTrack ?? CurrentItem;
+        var positionInSeconds = updatedPositionInSeconds ??
                                 (Position.HasValue ? (int)Position.Value.Position.TotalSeconds : 0);
-        PlayerState state = updatedState ?? State;
+        var state = updatedState ?? State;
 
         var dto = new PlayerUpdatedDto
         {
             UpdateQueue = updateQueue,
             CurrentTrack = currentItem?.ToTrackDto(),
             PositionInSeconds = positionInSeconds,
-            Queue = updateQueue ? queue.Select(i => i.ToTrackDto()).ToArray() : [],
+            Queue = updateQueue ? queue.Select(i => i.ToTrackDto(true)).ToArray() : [],
             State = state
         };
 
         await _hubContext.Clients.Group(GuildId.ToString()).UpdatePlayer(dto).ConfigureAwait(false);
     }
-    
+
     private async ValueTask UpdatePlayerDisconnectedAsync(PlayerState playerState = PlayerState.Destroyed)
     {
         var dto = new PlayerUpdatedDto
@@ -197,26 +218,5 @@ public sealed class SignalRPlayer : QueuedLavalinkPlayer, IInactivityPlayerListe
                 .UpdatePosition(Position.HasValue ? (int)Position.Value.Position.TotalSeconds : 0)
                 .ConfigureAwait(false);
         }
-    }
-
-    public ValueTask NotifyPlayerActiveAsync(PlayerTrackingState state, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return default;
-    }
-
-    public async ValueTask NotifyPlayerInactiveAsync(PlayerTrackingState state,
-        CancellationToken cancellationToken = default)
-    {
-        // This method is called when the player reached the inactivity deadline.
-        // For example: All users in the voice channel left and the player was inactive for longer than 30 seconds.
-        cancellationToken.ThrowIfCancellationRequested();
-        await UpdatePlayerDisconnectedAsync().ConfigureAwait(false);
-    }
-
-    public ValueTask NotifyPlayerTrackedAsync(PlayerTrackingState state, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return default;
     }
 }

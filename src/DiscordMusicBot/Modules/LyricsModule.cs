@@ -10,7 +10,10 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
 
-public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModule> logger, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
+public sealed class LyricsModule(
+    IAudioService audioService,
+    ILogger<LyricsModule> logger,
+    IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     private const int MaxEmbedMessageSize = 4000;
     private const int MaxTotalMessageSize = 5900;
@@ -19,17 +22,14 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
     ///     Shows lyrics to the track currently playing asynchronously.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
-    [SlashCommand("lyrics", description: "Searches for lyrics", runMode: RunMode.Async)]
+    [SlashCommand("lyrics", "Searches for lyrics", runMode: RunMode.Async)]
     public async Task Lyrics()
     {
         await DeferAsync().ConfigureAwait(false);
 
-        var player = await GetPlayerAsync(connectToVoiceChannel: false).ConfigureAwait(false);
+        var player = await GetPlayerAsync(false).ConfigureAwait(false);
 
-        if (player is null)
-        {
-            return;
-        }
+        if (player is null) return;
 
         var track = player.CurrentTrack;
 
@@ -47,9 +47,9 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
             return;
         }
 
-        Embed[] lyricsParts = SplitIntoChunks(lyrics, player.Position!.Value.Position).Take(10).ToArray();
+        var lyricsParts = SplitIntoChunks(lyrics, player.Position!.Value.Position).Take(10).ToArray();
 
-        IUserMessage message = await FollowupAsync(embeds: lyricsParts).ConfigureAwait(false);
+        var message = await FollowupAsync(embeds: lyricsParts).ConfigureAwait(false);
 
         // continue updating the message with the current lyrics
         // if (lyrics.TimedLines is null)
@@ -86,22 +86,22 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
     {
         List<Embed> chunks = [];
         EmbedBuilder chunk = new();
-        bool reachedMaxSize = false;
+        var reachedMaxSize = false;
 
         chunk.Title = $"📃 Lyrics for {lyrics.Track.Title} by {lyrics.Track.Author}:";
 
         // no timed lyrics
         if (lyrics.TimedLines is null || lyrics.TimedLines.Value.Length < 1)
         {
-            List<string> lines = lyrics.Text.Split("\n").ToList();
+            var lines = lyrics.Text.Split("\n").ToList();
 
-            for (int i = 0; i < lines.Count; i++)
+            for (var i = 0; i < lines.Count; i++)
             {
-                string line = lines[i];
+                var line = lines[i];
                 chunk.Description += line + "\n";
 
                 // max message length is 6000 characters, 1 embed = 4000 characters max
-                int max = reachedMaxSize ? MaxTotalMessageSize - MaxEmbedMessageSize : MaxEmbedMessageSize;
+                var max = reachedMaxSize ? MaxTotalMessageSize - MaxEmbedMessageSize : MaxEmbedMessageSize;
                 if (lines.Count <= i + 1 || chunk.Description.Length + lines[i + 1].Length + 10 <= max)
                     continue;
 
@@ -120,9 +120,9 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
         }
 
         // timed lyrics
-        for (int i = 0; i < lyrics.TimedLines.Value.Length; i++)
+        for (var i = 0; i < lyrics.TimedLines.Value.Length; i++)
         {
-            TimedLyricsLine line = lyrics.TimedLines.Value[i];
+            var line = lyrics.TimedLines.Value[i];
 
             // highlight the current line
             if (line.Range.Start <= playerPosition && playerPosition <= line.Range.End)
@@ -131,8 +131,9 @@ public sealed class LyricsModule(IAudioService audioService, ILogger<LyricsModul
                 chunk.Description += line.Line + "\n";
 
             // max message length is 6000 characters, 1 embed = 4000 characters max
-            int max = reachedMaxSize ? MaxTotalMessageSize - MaxEmbedMessageSize : MaxEmbedMessageSize;
-            if (lyrics.TimedLines.Value.Length <= i + 1 || chunk.Description.Length + lyrics.TimedLines.Value[i + 1].Line.Length + 10 <= max)
+            var max = reachedMaxSize ? MaxTotalMessageSize - MaxEmbedMessageSize : MaxEmbedMessageSize;
+            if (lyrics.TimedLines.Value.Length <= i + 1 ||
+                chunk.Description.Length + lyrics.TimedLines.Value[i + 1].Line.Length + 10 <= max)
                 continue;
 
             chunks.Add(chunk.Build());

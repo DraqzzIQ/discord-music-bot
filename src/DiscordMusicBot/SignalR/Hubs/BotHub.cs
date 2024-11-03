@@ -1,9 +1,8 @@
 using DiscordMusicBot.Audio;
 using DiscordMusicBot.Dtos;
-using DiscordMusicBot.Models;
+using DiscordMusicBot.Extensions;
 using DiscordMusicBot.Services;
 using DiscordMusicBot.SignalR.Clients;
-using DiscordMusicBot.Extensions;
 using Lavalink4NET;
 using Lavalink4NET.Players;
 using Microsoft.AspNetCore.Authorization;
@@ -15,35 +14,36 @@ namespace DiscordMusicBot.SignalR.Hubs;
 public sealed class BotHub : Hub<IBotClient>
 {
     private static readonly Dictionary<string, ulong> Connections = new();
+
     public override async Task OnConnectedAsync()
     {
         await base.OnConnectedAsync();
     }
-    
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         Connections.Remove(Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
-    
+
     public async Task SubscribeToPlayer(string guildId, IDbService dbService)
     {
-        bool valid = ulong.TryParse(guildId, out ulong id);
+        var valid = ulong.TryParse(guildId, out var id);
         if (!valid)
             return;
-        
-        ulong userId = ulong.Parse(Context.User?.FindFirst("UserId")?.Value ?? "0");
-        UserModel? user = await dbService.GetUserAsync(userId).ConfigureAwait(false);
-        if(!user.HasValue || !user.Value.GuildIds.Contains(id))
+
+        var userId = ulong.Parse(Context.User?.FindFirst("UserId")?.Value ?? "0");
+        var user = await dbService.GetUserAsync(userId).ConfigureAwait(false);
+        if (!user.HasValue || !user.Value.GuildIds.Contains(id))
             return;
-        
-        Connections[Context.ConnectionId] =  id;
+
+        Connections[Context.ConnectionId] = id;
         await Groups.AddToGroupAsync(Context.ConnectionId, guildId);
     }
 
     public async Task GetPlayerStatus(IAudioService audioService)
     {
-        if(!Connections.TryGetValue(Context.ConnectionId, out ulong guildId))
+        if (!Connections.TryGetValue(Context.ConnectionId, out var guildId))
             return;
 
         var player = (SignalRPlayer?)audioService.Players.Players.FirstOrDefault(x => x.GuildId == guildId);

@@ -1,28 +1,23 @@
 using System.Collections.Immutable;
-using Amazon.SecurityToken;
 using Discord;
 using Discord.WebSocket;
 using DiscordMusicBot.Audio;
 using DiscordMusicBot.Dtos;
-using DiscordMusicBot.Factories;
-using DiscordMusicBot.Models;
-using DiscordMusicBot.RestApi.Requests;
-using DiscordMusicBot.RestApi.Requests.Bot;
-using DiscordMusicBot.RestApi.Responses.Bot;
-using DiscordMusicBot.Services;
-using DiscordMusicBot.Util;
 using DiscordMusicBot.Extensions;
+using DiscordMusicBot.Factories;
+using DiscordMusicBot.RestApi.Requests;
+using DiscordMusicBot.RestApi.Requests.Player;
+using DiscordMusicBot.RestApi.Responses.Bot;
 using DiscordMusicBot.SignalR.Clients;
 using DiscordMusicBot.SignalR.Hubs;
+using DiscordMusicBot.Util;
 using Lavalink4NET;
 using Lavalink4NET.Extensions;
 using Lavalink4NET.Integrations.Lavasearch;
 using Lavalink4NET.Integrations.Lavasearch.Extensions;
 using Lavalink4NET.Integrations.Lavasrc;
-using Lavalink4NET.Integrations.LyricsJava;
 using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Lavalink4NET.Players;
-using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Lavalink4NET.Tracks;
 using Microsoft.AspNetCore.Authorization;
@@ -30,12 +25,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.JSInterop.Infrastructure;
 
 namespace DiscordMusicBot.RestApi.EndpointDefinitions;
 
-public class PlayerEndpointDefinition : IEndpointDefinition
+public class PlayerEndpointDefinition : BaseEndpointDefinition, IEndpointDefinition
 {
     public void DefineEndpoints(WebApplication app)
     {
@@ -55,6 +48,7 @@ public class PlayerEndpointDefinition : IEndpointDefinition
         app.MapPost("/api/player/deduplicate", DeduplicateQueueAsync);
         app.MapPost("/api/player/play", PlayTrackAsync);
         app.MapPost("/api/player/leave", LeaveAsync);
+        app.MapPost("/api/player/play-playlist", PlayPlaylistAsync);
     }
 
     public void DefineServices(IServiceCollection services)
@@ -62,19 +56,19 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> UpdatePositionAsync([AsParameters] UpdatePlayerPositionRequest request)
+    private async Task<IResult> UpdatePositionAsync([AsParameters] UpdatePlayerPositionRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
         if (player.CurrentTrack is null)
             return Results.NotFound("No track playing");
 
-        TimeSpan position = TimeSpan.FromSeconds(request.PositionInSeconds);
+        var position = TimeSpan.FromSeconds(request.PositionInSeconds);
 
         await player.SeekSignalRAsync(position).ConfigureAwait(false);
 
@@ -86,12 +80,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> LeaveAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> LeaveAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player =
+        var player =
             await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
@@ -106,12 +100,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> PlayTrackAsync([AsParameters] PlayRequest request)
+    private async Task<IResult> PlayTrackAsync([AsParameters] PlayRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player =
+        var player =
             await GetPlayerAsync(request.GuildId, request.AudioService, true, request.DiscordSocketClient,
                 request.UserId, request.HubContext).ConfigureAwait(false);
         if (player is null)
@@ -120,9 +114,9 @@ public class PlayerEndpointDefinition : IEndpointDefinition
         // Single track
         if (request.PlayRequestDto.IsTrack)
         {
-            LavalinkTrack track = LavalinkTrack.Parse(request.PlayRequestDto.EncodedTrack!, provider: null);
+            var track = LavalinkTrack.Parse(request.PlayRequestDto.EncodedTrack!, null);
 
-            Embed embed = EmbedCreator.CreateEmbed($"Added to queue",
+            var embed = EmbedCreator.CreateEmbed("Added to queue",
                 $"[{track.Title}]({track.Uri})\n{track.Author}\nDuration: {TimeSpanFormatter.FormatDuration(track.Duration)}",
                 Color.Blue,
                 true, track.ArtworkUri);
@@ -133,7 +127,7 @@ public class PlayerEndpointDefinition : IEndpointDefinition
             if (request.PlayRequestDto.ShouldEnqueue)
                 await player.PlaySignalRAsync(track).ConfigureAwait(false);
             else
-                await player.PlaySignalRAsync(track, enqueue: false).ConfigureAwait(false);
+                await player.PlaySignalRAsync(track, false).ConfigureAwait(false);
 
             return Results.Ok();
         }
@@ -150,23 +144,34 @@ public class PlayerEndpointDefinition : IEndpointDefinition
             :
             [
                 ..request.PlayRequestDto.EncodedPlaylistTracks!.Select(t =>
-                    LavalinkTrack.Parse(t, provider: null))
+                    LavalinkTrack.Parse(t, null))
             ];
 
-        // // Deezer artwork url being weird
-        // if (trackLoadResult is not null && trackLoadResult.Value.Tracks.Any(t => t.SourceName == "deezer"))      
-        // {
-        //     for (int i = 0; i < tracks.Length; i++)
-        //     {
-        //         if (tracks[i].ArtworkUri is null && tracks[i].AdditionalInformation.ContainsKey("artistArtworkUrl"))
-        //         {
-        //             tracks[i] = tracks[i] with
-        //             {
-        //                 ArtworkUri = new Uri(tracks[i].AdditionalInformation["artistArtworkUrl"].ToString())
-        //             };
-        //         }
-        //     }
-        // }
+        // Dezeer albums artwork for tracks missing workaround
+        if (request.PlayRequestDto.PlaylistUrl is not null && tracks[0].SourceName == "deezer" &&
+            tracks[0].ArtworkUri is null &&
+            trackLoadResult!.Value.Playlist!.AdditionalInformation.ContainsKey("artworkUrl")
+            && trackLoadResult!.Value.Playlist!.AdditionalInformation["artworkUrl"].GetString() is not null)
+        {
+            var artworkUri = new Uri(trackLoadResult!.Value.Playlist!.AdditionalInformation["artworkUrl"].GetString()!);
+
+            tracks = tracks.Select(t => new LavalinkTrack
+            {
+                Title = t.Title,
+                Identifier = t.Identifier,
+                Author = t.Author,
+                Duration = t.Duration,
+                IsLiveStream = t.IsLiveStream,
+                IsSeekable = t.IsSeekable,
+                Uri = t.Uri,
+                ArtworkUri = artworkUri,
+                Isrc = t.Isrc,
+                SourceName = t.SourceName,
+                StartPosition = t.StartPosition,
+                ProbeInfo = t.ProbeInfo,
+                AdditionalInformation = t.AdditionalInformation
+            }).ToArray();
+        }
 
         if (request.PlayRequestDto.ShouldEnqueue)
         {
@@ -176,11 +181,13 @@ public class PlayerEndpointDefinition : IEndpointDefinition
                 await player.AddRangeSignalRAsync(tracks.Skip(1)).ConfigureAwait(false);
             }
             else
+            {
                 await player.AddRangeSignalRAsync(tracks).ConfigureAwait(false);
+            }
         }
         else
         {
-            await player.PlaySignalRAsync(tracks[0], enqueue: false).ConfigureAwait(false);
+            await player.PlaySignalRAsync(tracks[0], false).ConfigureAwait(false);
             await player.InsertRangeSignalRAsync(0, tracks.Skip(1)).ConfigureAwait(false);
         }
 
@@ -192,12 +199,57 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> ShuffleQueueAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> PlayPlaylistAsync([AsParameters] PlayPlaylistRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var (authorized, playlist, user, result) =
+            await EnsureAccessToPlaylistAsync(request).ConfigureAwait(false);
+        if (!authorized)
+            return result!;
+
+        var player =
+            await GetPlayerAsync(request.GuildId, request.AudioService, true, request.DiscordSocketClient,
+                request.UserId, request.HubContext).ConfigureAwait(false);
+        if (player is null)
+            return Results.NotFound("Player not found");
+
+        var tracks = playlist!.Tracks.Select(t => LavalinkTrack.Parse(t.SerializationString, null))
+            .ToList();
+
+        if (tracks.Count == 0)
+            return Results.BadRequest("Playlist is empty");
+
+        if (request.ShouldPlay)
+        {
+            await player.PlaySignalRAsync(tracks[0], false).ConfigureAwait(false);
+            await player.InsertRangeSignalRAsync(0, tracks.Skip(1)).ConfigureAwait(false);
+        }
+        else if (player.CurrentItem is null)
+        {
+            await player.PlaySignalRAsync(tracks[0]).ConfigureAwait(false);
+            await player.AddRangeSignalRAsync(tracks.Skip(1)).ConfigureAwait(false);
+        }
+        else
+        {
+            await player.AddRangeSignalRAsync(tracks).ConfigureAwait(false);
+        }
+
+        await SendMessageWithUserPrefixAsync($"added {tracks.Count} tracks to the queue", request.GuildId,
+            request.UserId, request.DbService,
+            request.DiscordSocketClient).ConfigureAwait(false);
+
+        return Results.Ok();
+    }
+
+    [Authorize]
+    private async Task<IResult> ShuffleQueueAsync([AsParameters] GuildRequest request)
+    {
+        if (!await EnsureAuthorizedAsync(request))
+            return Results.Unauthorized();
+
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -211,12 +263,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> DeduplicateQueueAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> DeduplicateQueueAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -230,12 +282,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> PauseAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> PauseAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -249,12 +301,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> StopAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> StopAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player =
+        var player =
             await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
@@ -269,12 +321,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> ResumeAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> ResumeAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -288,12 +340,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> RewindTrackAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> RewindTrackAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -308,18 +360,18 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> ReorderQueueAsync([AsParameters] ReorderQueueRequest request)
+    private async Task<IResult> ReorderQueueAsync([AsParameters] ReorderQueueRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
         await player.ReorderQueueSignalRAsync(request.SourceIndex, request.DestinationIndex).ConfigureAwait(false);
 
-        await SendMessageWithUserPrefixAsync($"reordered the queue", request.GuildId, request.UserId, request.DbService,
+        await SendMessageWithUserPrefixAsync("reordered the queue", request.GuildId, request.UserId, request.DbService,
                 request.DiscordSocketClient)
             .ConfigureAwait(false);
 
@@ -327,12 +379,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> RemoveFromQueueAsync([AsParameters] RemoveFromQueueRequest request)
+    private async Task<IResult> RemoveFromQueueAsync([AsParameters] RemoveFromQueueRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -341,7 +393,7 @@ public class PlayerEndpointDefinition : IEndpointDefinition
 
         await player.RemoveAtSignalRAsync(request.Index).ConfigureAwait(false);
 
-        await SendMessageWithUserPrefixAsync($"removed a track from the queue", request.GuildId, request.UserId,
+        await SendMessageWithUserPrefixAsync("removed a track from the queue", request.GuildId, request.UserId,
                 request.DbService, request.DiscordSocketClient)
             .ConfigureAwait(false);
 
@@ -349,12 +401,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> ClearQueueAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> ClearQueueAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -368,12 +420,12 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> SkipTrackAsync([AsParameters] SkipToTrackRequest request)
+    private async Task<IResult> SkipTrackAsync([AsParameters] SkipToTrackRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
@@ -398,26 +450,20 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> GetLyricsAsync([AsParameters] GuildRequest request)
+    private async Task<IResult> GetLyricsAsync([AsParameters] GuildRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
 
-        SignalRPlayer? player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
+        var player = await GetPlayerAsync(request.GuildId, request.AudioService).ConfigureAwait(false);
         if (player is null)
             return Results.NotFound("Player not found");
 
 
-        if (player.CurrentTrack is null)
-        {
-            return Results.NotFound();
-        }
+        if (player.CurrentTrack is null) return Results.NotFound();
 
-        Lyrics? lyrics = await request.AudioService.Tracks.GetCurrentTrackLyricsAsync(player).ConfigureAwait(false);
-        if (lyrics is null)
-        {
-            return Results.NotFound("Player not found");
-        }
+        var lyrics = await request.AudioService.Tracks.GetCurrentTrackLyricsAsync(player).ConfigureAwait(false);
+        if (lyrics is null) return Results.NotFound("Player not found");
 
         LyricsResponse response = new()
         {
@@ -428,15 +474,15 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     [Authorize]
-    private async Task<IResult?> GetSearchAsync([AsParameters] SearchRequest request)
+    private async Task<IResult> GetSearchAsync([AsParameters] SearchRequest request)
     {
         if (!await EnsureAuthorizedAsync(request))
             return Results.Unauthorized();
-        
-        if(string.IsNullOrWhiteSpace(request.Query))
+
+        if (string.IsNullOrWhiteSpace(request.Query))
             return Results.NotFound();
 
-        TrackSearchMode mode = request.SearchMode switch
+        var mode = request.SearchMode switch
         {
             "ytsearch" => TrackSearchMode.YouTube,
             "ytmsearch" => TrackSearchMode.YouTubeMusic,
@@ -461,12 +507,13 @@ public class PlayerEndpointDefinition : IEndpointDefinition
             if (linkResult.IsPlaylist)
             {
                 var playlist = new ExtendedPlaylistInformation(linkResult.Playlist!);
-                SearchResponseDto dto = new SearchResponseDto
+                var dto = new SearchResponseDto
                 {
                     Playlists =
                     [
                         // if the playlist is from youtube or youtubemusic, send the tracks because no link is provided
-                        linkResult.Tracks[0].SourceName == "youtube" || linkResult.Tracks[0].SourceName == "youtubemusic"
+                        linkResult.Tracks[0].SourceName == "youtube" ||
+                        linkResult.Tracks[0].SourceName == "youtubemusic"
                             ? playlist.ToPlaylistDto(linkResult.Tracks.Select(t => t.ToString()).ToArray())
                             : playlist.ToPlaylistDto()
                     ],
@@ -493,7 +540,7 @@ public class PlayerEndpointDefinition : IEndpointDefinition
 
         var result = await request.AudioService.Tracks.SearchAsync(
             request.Query,
-            loadOptions: new TrackLoadOptions(SearchMode: mode),
+            loadOptions: new TrackLoadOptions(mode),
             categories: ImmutableArray.Create(SearchCategory.Track, SearchCategory.Playlist, SearchCategory.Album)
         ).ConfigureAwait(false);
 
@@ -514,14 +561,15 @@ public class PlayerEndpointDefinition : IEndpointDefinition
     }
 
     private async Task<SignalRPlayer?> GetPlayerAsync(ulong guildId, IAudioService audioService, bool join = false,
-        DiscordSocketClient? discordSocketClient = null, ulong userId = 0, IHubContext<BotHub, IBotClient>? hubContext = null)
+        DiscordSocketClient? discordSocketClient = null, ulong userId = 0,
+        IHubContext<BotHub, IBotClient>? hubContext = null)
     {
         var player = await audioService.Players.GetPlayerAsync<SignalRPlayer>(guildId).ConfigureAwait(false);
         if (player is null || player.State == PlayerState.Destroyed)
         {
             if (join && discordSocketClient is not null && hubContext is not null)
             {
-                SocketGuild? guild = discordSocketClient.GetGuild(guildId);
+                var guild = discordSocketClient.GetGuild(guildId);
 
                 IGuildUser? user = guild?.GetUser(userId);
 
@@ -530,49 +578,17 @@ public class PlayerEndpointDefinition : IEndpointDefinition
 
                 if (user.VoiceChannel.GuildId != guildId)
                     return null;
-                
-                var options = new SignalRPlayerOptions {HubContext = hubContext};
+
+                var options = new SignalRPlayerOptions { HubContext = hubContext };
 
                 return await audioService.Players
                     .JoinAsync(guildId, user.VoiceChannel.Id, CustomQueuedPlayerFactory.CustomQueued, options)
                     .ConfigureAwait(false);
             }
+
             return null;
         }
 
         return player;
-    }
-
-    private async Task SendMessageWithUserPrefixAsync(string message, ulong guildId, ulong userId, IDbService dbService,
-        DiscordSocketClient discordSocketClient)
-    {
-        SocketUser user = discordSocketClient.GetUser(userId);
-        ITextChannel? channel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, guildId)
-            .ConfigureAwait(false);
-        if (channel is null)
-            return;
-
-        await channel.SendMessageAsync($"<@{user.Id}> {message}.", allowedMentions: AllowedMentions.None)
-            .ConfigureAwait(false);
-    }
-
-    private async Task SendEmbedMessageWithUserPrefixAsync(string message, Embed embed, ulong guildId, ulong userId,
-        IDbService dbService,
-        DiscordSocketClient discordSocketClient)
-    {
-        SocketUser user = discordSocketClient.GetUser(userId);
-        ITextChannel? channel = await GuildChannelUtil.GetBotGuildChannel(dbService, discordSocketClient, guildId)
-            .ConfigureAwait(false);
-        if (channel is null)
-            return;
-
-        await channel.SendMessageAsync($"<@{user.Id}> {message}.", embed: embed, allowedMentions: AllowedMentions.None)
-            .ConfigureAwait(false);
-    }
-
-    private async Task<bool> EnsureAuthorizedAsync(GuildRequest request)
-    {
-        UserModel? user = await request.DbService.GetUserAsync(request.UserId).ConfigureAwait(false);
-        return user is not null && user.Value.GuildIds.Contains(request.GuildId);
     }
 }

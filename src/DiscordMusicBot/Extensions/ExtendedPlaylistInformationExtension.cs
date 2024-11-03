@@ -17,7 +17,7 @@ public static class ExtendedPlaylistInformationExtension
             SelectedTrack = playlist.SelectedTrack?.Track.ToTrackDto()
         };
     }
-    
+
     public static PlaylistDto ToPlaylistDto(this ExtendedPlaylistInformation playlist, string[] encodedTracks)
     {
         return new PlaylistDto

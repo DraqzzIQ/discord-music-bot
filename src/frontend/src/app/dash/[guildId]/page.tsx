@@ -1,7 +1,7 @@
 "use client";
 
 import PlayerControl from "@/components/player/PlayerControl";
-import React, { useEffect, use } from "react";
+import React, {use, useEffect} from "react";
 import {socketService} from "@/api/signalr/socket";
 import {PlayerUpdatedDto} from "@/dtos/PlayerUpdatedDto";
 import {TrackDto} from "@/dtos/TrackDto";

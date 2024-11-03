@@ -1,7 +1,7 @@
 "use client";
 
 import DefaultButton from "@/components/DefaultButton";
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 
 export default function HomeButton() {
     const router = useRouter();

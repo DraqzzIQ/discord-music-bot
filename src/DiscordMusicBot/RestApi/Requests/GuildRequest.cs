@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace DiscordMusicBot.RestApi.Requests.Bot;
+namespace DiscordMusicBot.RestApi.Requests;
 
 public class GuildRequest : BaseRequest
 {

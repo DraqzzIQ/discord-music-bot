@@ -6,16 +6,16 @@ public static class EnumerableExtensions
     {
         return source.Shuffle(Random.Shared);
     }
-    
+
     public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random random)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(random);
 
-        List<T> buffer = source.ToList();
-        for (int i = 0; i < buffer.Count; i++)
+        var buffer = source.ToList();
+        for (var i = 0; i < buffer.Count; i++)
         {
-            int j = random.Next(i, buffer.Count);
+            var j = random.Next(i, buffer.Count);
             yield return buffer[j];
 
             buffer[j] = buffer[i];

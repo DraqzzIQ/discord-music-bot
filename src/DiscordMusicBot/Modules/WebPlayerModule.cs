@@ -10,25 +10,30 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
-public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModule> logger, IDbService dbService,IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
+
+public sealed class WebPlayerModule(
+    IAudioService audioService,
+    ILogger<SkipModule> logger,
+    IDbService dbService,
+    IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     /// <summary>
     ///     Generates a URL with auth token to the web player.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
-    [SlashCommand("web-player", description: "Generates a link to the web interface", runMode: RunMode.Async)]
+    [SlashCommand("web-player", "Generates a link to the web interface", runMode: RunMode.Async)]
     public async Task WebPlayer()
     {
-        await DeferAsync(ephemeral: true).ConfigureAwait(false);
-        
-        Guid token = SecureGuidGenerator.CreateCryptographicallySecureGuid();
-        
-        UserModel? userModel = await dbService.GetUserAsync(Context.User.Id).ConfigureAwait(false);
+        await DeferAsync(true).ConfigureAwait(false);
+
+        var token = SecureGuidGenerator.CreateCryptographicallySecureGuid();
+
+        var userModel = await dbService.GetUserAsync(Context.User.Id).ConfigureAwait(false);
         if (userModel is not null)
         {
-            UserModel updatedUser = userModel.Value;
+            var updatedUser = userModel.Value;
             updatedUser.Token = token; // Regenerate token
-            if(!updatedUser.GuildIds.Contains(Context.Guild.Id))
+            if (!updatedUser.GuildIds.Contains(Context.Guild.Id))
                 updatedUser.GuildIds = updatedUser.GuildIds.Append(Context.Guild.Id).ToArray(); // Add guild to user
             await dbService.UpdateUserAsync(updatedUser).ConfigureAwait(false);
         }
@@ -36,19 +41,19 @@ public sealed class WebPlayerModule(IAudioService audioService, ILogger<SkipModu
         {
             UserModel user = new()
             {
-                GuildIds = new[] {Context.Guild.Id},
+                GuildIds = new[] { Context.Guild.Id },
                 UserId = Context.User.Id,
                 Token = token
             };
-        
+
             await dbService.AddUserAsync(user).ConfigureAwait(false);
         }
-       
-        Embed embed = new EmbedBuilder()
+
+        var embed = new EmbedBuilder()
             .WithTitle("Web Player")
             .WithDescription($"[Click here to open the web player]({ConfigService.FrontendBaseUrl}/api/login/{token})")
             .Build();
-        
+
         await FollowupAsync(embed: embed).ConfigureAwait(false);
     }
 }

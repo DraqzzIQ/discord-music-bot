@@ -1,4 +1,4 @@
-import {Cross1Icon, CheckIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross1Icon} from "@radix-ui/react-icons";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import {Progress} from "@/components/ui/progress";
 import React, {useEffect, useState} from "react";

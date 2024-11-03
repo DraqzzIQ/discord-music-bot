@@ -1,7 +1,6 @@
-using Discord.WebSocket;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DiscordMusicBot.RestApi.Requests.Bot;
+namespace DiscordMusicBot.RestApi.Requests.Player;
 
 public class RemoveFromQueueRequest : GuildRequest
 {

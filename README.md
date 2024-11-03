@@ -16,6 +16,12 @@ Discord music bot with web interface written in C# using [Lavalink4NET](https://
 - Playlists
 - Web Interface
 
+## Screenshots
+
+![Searching](screenshots/searching.png)
+![Playlists](screenshots/playlists.png)
+![Lyrics](screenshots/lyrics.png)
+
 # Usage
 
 ## Docker

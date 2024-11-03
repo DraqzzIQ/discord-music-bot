@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { InfoIcon } from "lucide-react"
+import {useState} from 'react'
+import {Button} from "@/components/ui/button"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
+import {InfoIcon} from "lucide-react"
 
 interface InfoIconProps {
   buttonLabel: string

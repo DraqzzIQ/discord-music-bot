@@ -5,6 +5,9 @@ import {formatDuration} from "@/lib/utils";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import DefaultButton from "@/components/DefaultButton";
+import {PlusIcon} from "lucide-react";
+import AddToPlaylistPopover from "@/components/dashboard/AddToPlaylistPopover";
 
 interface QueuedSongProps {
     index: number;
@@ -36,13 +39,14 @@ const QueuedSong: React.FC<QueuedSongProps> = ({index, track, guildId, onRemove,
             <ContextMenu>
                 <ContextMenuTrigger>
                     <div className="flex justify-between w-full items-center cursor-move">
-                        <div className="flex flex-row space-x-1.5 w-[calc(100%-110px)]">
+                        <div className="flex flex-row space-x-1.5 w-[calc(100%-150px)]">
                             <img
-                                className="h-[55px] w-[55px] rounded-xl object-cover"
-                                src={track.thumbnailUrl ?? '/bluray-disc-icon.svg'}
+                                className={`h-[55px] w-[55px] rounded-xl object-cover ${track.artworkUrl ? '' : 'dark:invert'}`}
+                                src={track.artworkUrl ?? '/bluray-disc-icon.svg'}
                                 onError={({currentTarget}) => {
                                     currentTarget.onerror = null; // prevents looping
                                     currentTarget.src = "/bluray-disc-icon.svg";
+                                    currentTarget.className = "h-[55px] w-[55px] rounded-xl object-cover dark:invert";
                                 }}
                                 alt='track icon'/>
                             <div className="space-y-1.5 w-full">
@@ -57,11 +61,19 @@ const QueuedSong: React.FC<QueuedSongProps> = ({index, track, guildId, onRemove,
                                 </div>
                             </div>
                         </div>
-                        <DropdownMenuTrigger>
-                            <div className="p-2 mr-1 hover:scale-110 cursor-pointer">
-                                <DotsVerticalIcon className="h-5 w-5"/>
-                            </div>
-                        </DropdownMenuTrigger>
+                        <div className="flex items-center">
+                            <AddToPlaylistPopover child={
+                                <DefaultButton tooltipText={"Add to playlist"}>
+                                    <PlusIcon size="28"/>
+                                </DefaultButton>
+                            } guildId={guildId} track={track}>
+                            </AddToPlaylistPopover>
+                            <DropdownMenuTrigger>
+                                <div className="p-2 mr-1 hover:scale-110 cursor-pointer">
+                                    <DotsVerticalIcon className="h-5 w-5"/>
+                                </div>
+                            </DropdownMenuTrigger>
+                        </div>
                     </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent>

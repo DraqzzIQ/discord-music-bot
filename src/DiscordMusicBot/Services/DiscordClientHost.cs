@@ -11,8 +11,8 @@ internal sealed class DiscordClientHost : IHostedService
 {
     private readonly DiscordSocketClient _discordSocketClient;
     private readonly InteractionService _interactionService;
-    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DiscordClientHost> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public DiscordClientHost(
         DiscordSocketClient discordSocketClient,
@@ -43,6 +43,18 @@ internal sealed class DiscordClientHost : IHostedService
 
         await _discordSocketClient
             .StartAsync()
+            .ConfigureAwait(false);
+    }
+
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _discordSocketClient.InteractionCreated -= InteractionCreated;
+        _discordSocketClient.Ready -= ClientReady;
+        _discordSocketClient.Log -= LogAsync;
+
+        await _discordSocketClient
+            .StopAsync()
             .ConfigureAwait(false);
     }
 
@@ -80,18 +92,6 @@ internal sealed class DiscordClientHost : IHostedService
         return Task.CompletedTask;
     }
 
-
-    public async Task StopAsync(CancellationToken cancellationToken)
-    {
-        _discordSocketClient.InteractionCreated -= InteractionCreated;
-        _discordSocketClient.Ready -= ClientReady;
-        _discordSocketClient.Log -= LogAsync;
-
-        await _discordSocketClient
-            .StopAsync()
-            .ConfigureAwait(false);
-    }
-
     private Task<IResult> InteractionCreated(SocketInteraction interaction)
     {
         var interactionContext = new SocketInteractionContext(_discordSocketClient, interaction);
@@ -106,7 +106,7 @@ internal sealed class DiscordClientHost : IHostedService
 
         // enable logging
         _interactionService.Log += LogAsync;
-        
+
         // set activity
         await _discordSocketClient
             .SetActivityAsync(new Game("Music", ActivityType.Listening))

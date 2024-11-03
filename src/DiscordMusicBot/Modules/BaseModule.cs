@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using DiscordMusicBot.Audio;
 using DiscordMusicBot.Factories;
 using DiscordMusicBot.SignalR.Clients;
 using DiscordMusicBot.SignalR.Hubs;
+using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
-using Lavalink4NET;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
@@ -18,25 +18,27 @@ namespace DiscordMusicBot.Modules;
 public class BaseModule : InteractionModuleBase<SocketInteractionContext>
 {
     protected readonly IAudioService _audioService;
-    protected readonly ILogger<BaseModule> _logger;
     protected readonly IHubContext<BotHub, IBotClient> _hubContext;
+    protected readonly ILogger<BaseModule> _logger;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="BaseModule"/> class.
+    ///     Initializes a new instance of the <see cref="BaseModule" /> class.
     /// </summary>
     /// <param name="audioService">the audio service</param>
     /// <param name="logger">the logger</param>
     /// <param name="hubContext">the hubContext</param>
     /// <exception cref="ArgumentNullException">
-    ///     thrown if the specified <paramref name="audioService"/> is <see langword="null"/>.
+    ///     thrown if the specified <paramref name="audioService" /> is <see langword="null" />.
     /// </exception>
     /// <exception cref="ArgumentNullException">
-    ///     thrown if the specified <paramref name="logger"/> is <see langword="null"/>.
+    ///     thrown if the specified <paramref name="logger" /> is <see langword="null" />.
     /// </exception>
-    ///  /// <exception cref="ArgumentNullException">
-    ///     thrown if the specified <paramref name="hubContext"/> is <see langword="null"/>.
+    /// ///
+    /// <exception cref="ArgumentNullException">
+    ///     thrown if the specified <paramref name="hubContext" /> is <see langword="null" />.
     /// </exception>
-    protected BaseModule(IAudioService audioService, ILogger<BaseModule> logger, IHubContext<BotHub, IBotClient> hubContext)
+    protected BaseModule(IAudioService audioService, ILogger<BaseModule> logger,
+        IHubContext<BotHub, IBotClient> hubContext)
     {
         ArgumentNullException.ThrowIfNull(audioService);
         ArgumentNullException.ThrowIfNull(logger);
@@ -56,32 +58,33 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
     /// <returns>
     ///     a task that represents the asynchronous operation. The task result is the lavalink player.
     /// </returns>
-    protected async ValueTask<SignalRPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true, bool updatePlayer = false)
+    protected async ValueTask<SignalRPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true,
+        bool updatePlayer = false)
     {
         var retrieveOptions = new PlayerRetrieveOptions(
-            ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
+            connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None);
 
         var result = await _audioService.Players
-            .RetrieveAsync(Context, playerFactory: CustomQueuedPlayerFactory.CustomQueued, new SignalRPlayerOptions {HubContext = _hubContext}, retrieveOptions)
+            .RetrieveAsync(Context, CustomQueuedPlayerFactory.CustomQueued,
+                new SignalRPlayerOptions { HubContext = _hubContext }, retrieveOptions)
             .ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            SignalRPlayer player = result.Player;
+            var player = result.Player;
             if (updatePlayer)
                 await player.UpdatePlayerAsync();
             return player;
         }
-        
+
         var errorMessage = result.Status switch
         {
             PlayerRetrieveStatus.UserNotInVoiceChannel => "You are not connected to a voice channel.",
             PlayerRetrieveStatus.BotNotConnected => "The bot is currently not connected.",
-            _ => "Unknown error.",
+            _ => "Unknown error."
         };
 
         await FollowupAsync(errorMessage).ConfigureAwait(false);
         return null;
-
     }
 }
