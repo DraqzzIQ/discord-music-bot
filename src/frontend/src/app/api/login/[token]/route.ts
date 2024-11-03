@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ token: string }> }) {
+    const params = await props.params;
     const { token } = params;
     const url = new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000/");
 

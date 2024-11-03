@@ -23,7 +23,7 @@ public class SwaggerEndpointDefinition : IEndpointDefinition
         services.AddSwaggerGen(
             options =>
             {
-                options.SwaggerDoc("v1", new() { Title = "DiscordMusicBot API", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "DiscordMusicBot API", Version = "v1" });
                 // Auth token in the authCookie cookie
                 options.AddSecurityDefinition("Token", new OpenApiSecurityScheme
                 {
@@ -56,7 +56,7 @@ public class SwaggerEndpointDefinition : IEndpointDefinition
                             },
                             Scheme = "Token",
                             Name = "Token",
-                            In = ParameterLocation.Cookie,
+                            In = ParameterLocation.Cookie
                         },
 
                         new List<string>()
@@ -71,7 +71,7 @@ public class SwaggerEndpointDefinition : IEndpointDefinition
                             },
                             Scheme = "CustomToken",
                             Name = "HeaderAuth",
-                            In = ParameterLocation.Header,
+                            In = ParameterLocation.Header
                         },
                         new List<string>()
                     }

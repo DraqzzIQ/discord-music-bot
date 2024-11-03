@@ -11,7 +11,7 @@ public class BaseRequest
     [FromServices] public IAudioService AudioService { get; init; }
     [FromServices] public IDbService DbService { get; init; }
     [FromServices] public DiscordSocketClient DiscordSocketClient { get; init; }
-    
+
     public ClaimsPrincipal User { get; init; }
     public ulong UserId => ulong.Parse(User.FindFirst("UserId")?.Value ?? "0");
 }

@@ -1,21 +1,22 @@
 import {TrackDto} from "@/dtos/TrackDto";
-import {Queue} from "@phosphor-icons/react";
-import {Loader2, PlayIcon} from "lucide-react";
+import {ListPlusIcon, Loader2, PlayIcon, PlusIcon} from "lucide-react";
 import DefaultButton from "@/components/DefaultButton";
 import {formatDuration} from "@/lib/utils";
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu";
 import {RequestPlay} from "@/api/rest/apiService";
 import {useState} from "react";
+import AddToPlaylistPopover from "@/components/dashboard/AddToPlaylistPopover";
 
 export interface SearchTrackProps {
     track: TrackDto,
     guildId: number,
-    setOnErrorPlaying: (value: boolean) => void
+    setOnErrorPlaying: () => void
 }
 
 export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchTrackProps) {
     const [playLoading, setPlayLoading] = useState(false);
     const [addToQueueLoading, setAddToQueueLoading] = useState(false);
+    const [addToPlaylistLoading, setAddToPlaylistLoading] = useState(false);
 
     const handlePlay = async () => {
         setPlayLoading(true);
@@ -25,7 +26,7 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
             encodedTrack: track.encodedTrack,
         });
         if (!success)
-            setOnErrorPlaying(false);
+            setOnErrorPlaying();
         setPlayLoading(false);
     }
 
@@ -37,10 +38,9 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
             encodedTrack: track.encodedTrack,
         });
         if (!success)
-            setOnErrorPlaying(false);
+            setOnErrorPlaying();
         setAddToQueueLoading(false);
     }
-
 
     return (
         <ContextMenu>
@@ -48,17 +48,18 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
                 <div className="flex justify-between items-center w-full my-3">
                     <div className="w-[calc(100%-150px)] flex space-x-1.5">
                         <img
-                            className="h-[55px] w-[55px] rounded-xl object-cover"
-                            src={track.thumbnailUrl ?? '/bluray-disc-icon.svg'}
+                            className={`h-[55px] w-[55px] rounded-xl object-cover ${track.artworkUrl ? '' : 'dark:invert'}`}
+                            src={track.artworkUrl ?? '/bluray-disc-icon.svg'}
                             onError={({currentTarget}) => {
                                 currentTarget.onerror = null; // prevents looping
                                 currentTarget.src = "/bluray-disc-icon.svg";
+                                currentTarget.className = "h-[55px] w-[55px] rounded-xl object-cover dark:invert";
                             }}
                             alt='track icon'/>
                         <div className="space-y-1.5 w-full">
                             <div className="h-6 truncate">
                                 <a href={track.url} target="_blank" rel="noreferrer"
-                                   className="hover:underline font-semibold text-lg">
+                                   className="hover:underline font-semibold text-lg text-black dark:text-white">
                                     {track.title}
                                 </a>
                             </div>
@@ -67,6 +68,12 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
                         </div>
                     </div>
                     <div className="pr-5 flex space-x-4">
+                        <AddToPlaylistPopover child={
+                            <DefaultButton tooltipText={"Add to playlist"}>
+                                <PlusIcon size="28"/>
+                            </DefaultButton>
+                        } guildId={guildId} track={track}>
+                        </AddToPlaylistPopover>
                         <DefaultButton tooltipText="Play" onClick={handlePlay} disabled={playLoading}>
                             {playLoading ?
                                 <Loader2 className="animate-spin h-[22px] w-[22px] text-primary"/>
@@ -79,7 +86,7 @@ export default function SearchTrack({track, guildId, setOnErrorPlaying}: SearchT
                             {addToQueueLoading ?
                                 <Loader2 className="animate-spin h-[22px] w-[22px] text-primary"/>
                                 :
-                                <Queue size="22"/>
+                                <ListPlusIcon size="22"/>
                             }
                         </DefaultButton>
                     </div>

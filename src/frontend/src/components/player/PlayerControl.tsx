@@ -76,11 +76,12 @@ const PlayerControl: React.FC<PlayerControlProps> = ({
             {loading ? <div className="w-1/3"><QueuedSongSkeleton/></div> :
                 <div className="flex flex-row space-x-3 w-1/3">
                     <img
-                        className="h-[60px] w-[60px] rounded-xl object-cover"
-                        src={currentTrack?.thumbnailUrl ?? '/bluray-disc-icon.svg'}
+                        className={`h-[60px] w-[60px] rounded-xl object-cover ${currentTrack?.artworkUrl ? '' : 'dark:invert'}`}
+                        src={currentTrack?.artworkUrl ?? '/bluray-disc-icon.svg'}
                         onError={({currentTarget}) => {
                             currentTarget.onerror = null; // prevents looping
                             currentTarget.src = "/bluray-disc-icon.svg";
+                            currentTarget.className = "h-[60px] w-[60px] rounded-xl object-cover dark:invert";
                         }}
                         alt='track icon'
                     />

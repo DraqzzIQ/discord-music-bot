@@ -10,18 +10,16 @@ public static class EndpointDefinitionExtension
     {
         List<IEndpointDefinition> endpointDefinitions = [];
 
-        foreach (Type marker in scanMarkers)
+        foreach (var marker in scanMarkers)
         {
             endpointDefinitions.AddRange(
                 marker.Assembly.ExportedTypes
-                    .Where(x => typeof(IEndpointDefinition).IsAssignableFrom(x) && x is { IsInterface: false, IsAbstract: false })
+                    .Where(x => typeof(IEndpointDefinition).IsAssignableFrom(x) &&
+                                x is { IsInterface: false, IsAbstract: false })
                     .Select(Activator.CreateInstance).Cast<IEndpointDefinition>()
             );
 
-            foreach (IEndpointDefinition endpointDefinition in endpointDefinitions)
-            {
-                endpointDefinition.DefineServices(services);
-            }
+            foreach (var endpointDefinition in endpointDefinitions) endpointDefinition.DefineServices(services);
 
             services.AddSingleton(endpointDefinitions as IReadOnlyCollection<IEndpointDefinition>);
         }
@@ -31,9 +29,6 @@ public static class EndpointDefinitionExtension
     {
         var definitions = app.Services.GetRequiredService<IReadOnlyCollection<IEndpointDefinition>>();
 
-        foreach (IEndpointDefinition endpointDefinition in definitions)
-        {
-            endpointDefinition.DefineEndpoints(app);
-        }
+        foreach (var endpointDefinition in definitions) endpointDefinition.DefineEndpoints(app);
     }
 }

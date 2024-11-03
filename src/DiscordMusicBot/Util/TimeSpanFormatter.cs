@@ -1,5 +1,5 @@
-﻿
-namespace DiscordMusicBot.Util;
+﻿namespace DiscordMusicBot.Util;
+
 internal static class TimeSpanFormatter
 {
     public static string FormatDuration(TimeSpan? timeSpan)

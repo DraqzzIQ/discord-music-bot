@@ -9,7 +9,8 @@ public static class EmbedCreator
     private const int MaxTotalMessageSize = 5800; // Buffer for embed fields
     private const int MaxEmbedsPerMessage = 10;
 
-    public static Embed CreateEmbed(string title, string description, Color? color = null, bool timestamp = true, Uri? thumbnailUrl = null)
+    public static Embed CreateEmbed(string title, string description, Color? color = null, bool timestamp = true,
+        Uri? thumbnailUrl = null)
     {
         var embed = new EmbedBuilder()
             .WithTitle(title)
@@ -24,16 +25,17 @@ public static class EmbedCreator
         return embed.Build();
     }
 
-    public static Embed[] CreateEmbeds(string title, string description, ushort maxCharsPerEmbed = MaxEmbedMessageSize, Color? color = null,
+    public static Embed[] CreateEmbeds(string title, string description, ushort maxCharsPerEmbed = MaxEmbedMessageSize,
+        Color? color = null,
         bool timestamp = true, Uri? thumbnailUrl = null)
     {
         List<Embed> chunks = [];
-        int totalLength = 0;
+        var totalLength = 0;
 
         while (!string.IsNullOrWhiteSpace(description) && totalLength < MaxTotalMessageSize)
         {
-            int length = Math.Min(description.Length, Math.Min(maxCharsPerEmbed, MaxTotalMessageSize - totalLength));
-            string chunk = description[..length];
+            var length = Math.Min(description.Length, Math.Min(maxCharsPerEmbed, MaxTotalMessageSize - totalLength));
+            var chunk = description[..length];
             description = description[length..];
             totalLength += length;
 
@@ -44,7 +46,8 @@ public static class EmbedCreator
             if (color.HasValue)
                 embed.WithColor(color.Value);
             // Add timestamp to the last embed
-            if (timestamp && (description.Length == 0 || totalLength == MaxTotalMessageSize || chunks.Count == MaxEmbedsPerMessage - 1))
+            if (timestamp && (description.Length == 0 || totalLength == MaxTotalMessageSize ||
+                              chunks.Count == MaxEmbedsPerMessage - 1))
                 embed.WithCurrentTimestamp();
             if (thumbnailUrl is not null && chunks.Count == 0)
                 embed.WithThumbnailUrl(thumbnailUrl.ToString());
@@ -57,16 +60,17 @@ public static class EmbedCreator
         return chunks.ToArray();
     }
 
-    public static Embed[] CreateEmbeds(string title, List<string> descriptionLines, ushort maxCharsPerEmbed = MaxEmbedMessageSize, Color? color = null,
+    public static Embed[] CreateEmbeds(string title, List<string> descriptionLines,
+        ushort maxCharsPerEmbed = MaxEmbedMessageSize, Color? color = null,
         bool timestamp = true, Uri? thumbnailUrl = null)
     {
         List<Embed> chunks = [];
-        int totalLength = 0;
-        int index = 0;
+        var totalLength = 0;
+        var index = 0;
 
         while (index < descriptionLines.Count && totalLength + descriptionLines[index].Length < MaxTotalMessageSize)
         {
-            string chunk = "";
+            var chunk = "";
             while (index < descriptionLines.Count && chunk.Length + descriptionLines[index].Length < maxCharsPerEmbed &&
                    totalLength + descriptionLines[index].Length < MaxTotalMessageSize)
             {
@@ -82,7 +86,8 @@ public static class EmbedCreator
             if (color.HasValue)
                 embed.WithColor(color.Value);
             // Add timestamp to the last embed
-            if (timestamp && (index >= descriptionLines.Count || totalLength + descriptionLines[index].Length > MaxTotalMessageSize ||
+            if (timestamp && (index >= descriptionLines.Count ||
+                              totalLength + descriptionLines[index].Length > MaxTotalMessageSize ||
                               chunks.Count == MaxEmbedsPerMessage - 1))
                 embed.WithCurrentTimestamp();
             if (thumbnailUrl is not null && chunks.Count == 0)

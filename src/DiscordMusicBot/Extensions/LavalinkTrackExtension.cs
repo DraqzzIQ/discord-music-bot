@@ -11,8 +11,8 @@ public static class LavalinkTrackExtension
         {
             Title = track.Title,
             Author = track.Author,
-            DurationInSeconds = (int) track.Duration.TotalSeconds,
-            ThumbnailUrl = track.ArtworkUri,
+            DurationInSeconds = (int)track.Duration.TotalSeconds,
+            ArtworkUrl = track.ArtworkUri,
             Url = track.Uri,
             EncodedTrack = encode ? track.ToString() : null
         };

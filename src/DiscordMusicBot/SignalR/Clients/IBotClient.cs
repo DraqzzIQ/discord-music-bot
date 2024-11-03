@@ -1,5 +1,4 @@
 using DiscordMusicBot.Dtos;
-using Lavalink4NET.Players;
 
 namespace DiscordMusicBot.SignalR.Clients;
 

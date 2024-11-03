@@ -1,6 +1,5 @@
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using DiscordMusicBot.Models;
 using DiscordMusicBot.Services;
 using DiscordMusicBot.SignalR.Clients;
@@ -11,21 +10,26 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordMusicBot.Modules;
 
-public class SetBotChannelModule(IAudioService audioService, ILogger<SetBotChannelModule> logger, IDbService dbService, IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
+public class SetBotChannelModule(
+    IAudioService audioService,
+    ILogger<SetBotChannelModule> logger,
+    IDbService dbService,
+    IHubContext<BotHub, IBotClient> hubContext) : BaseModule(audioService, logger, hubContext)
 {
     private readonly IDbService _dbService = dbService;
-    
+
     /// <summary>
     ///     Sets the channel for text messages asynchronously.
     /// </summary>
     /// <returns>a task that represents the asynchronous operation</returns>
     [DefaultMemberPermissions(GuildPermission.Administrator)]
-    [SlashCommand("set-bot-channel", description: "Sets the channel which the bot uses to the current channel", runMode: RunMode.Async)]
+    [SlashCommand("set-bot-channel", "Sets the channel which the bot uses to the current channel",
+        runMode: RunMode.Async)]
     public async Task SetBotChannel()
     {
-        SocketGuild? guild = Context.Guild;
+        var guild = Context.Guild;
 
-        ISocketMessageChannel? channel = Context.Channel;
+        var channel = Context.Channel;
 
         if (channel is null)
         {
@@ -33,7 +37,7 @@ public class SetBotChannelModule(IAudioService audioService, ILogger<SetBotChann
             return;
         }
 
-        await _dbService.SetBotChannelAsync(new BotChannelModel()
+        await _dbService.SetBotChannelAsync(new BotChannelModel
         {
             GuildId = guild.Id,
             ChannelId = channel.Id

@@ -1,20 +1,19 @@
 ﻿using Discord.Interactions;
-using Discord.WebSocket;
-using Lavalink4NET.Extensions;
-using Lavalink4NET.InactivityTracking.Extensions;
-using Lavalink4NET.InactivityTracking.Trackers.Users;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Discord.Rest;
+using Discord.WebSocket;
 using DiscordMusicBot.Audio;
 using DiscordMusicBot.Extensions;
 using DiscordMusicBot.RestApi.Auth;
 using DiscordMusicBot.RestApi.EndpointDefinitions;
 using DiscordMusicBot.Services;
+using Lavalink4NET.Extensions;
+using Lavalink4NET.InactivityTracking.Extensions;
 using Lavalink4NET.InactivityTracking.Trackers.Idle;
+using Lavalink4NET.InactivityTracking.Trackers.Users;
+using Lavalink4NET.Integrations.LyricsJava.Extensions;
 using Microsoft.AspNetCore.Builder;
-
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,9 +49,7 @@ builder.Services.AddInactivityTracking();
 builder.Services.AddInactivityTracker<UsersInactivityTracker>();
 builder.Services.AddInactivityTracker<IdleInactivityTracker>();
 
-builder.Services.ConfigureInactivityTracking(options =>
-{
-});
+builder.Services.ConfigureInactivityTracking(options => { });
 
 builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
 {
@@ -61,10 +58,7 @@ builder.Services.Configure<UsersInactivityTrackerOptions>(options =>
     options.ExcludeBots = true;
 });
 
-builder.Services.Configure<IdleInactivityTrackerOptions>(options =>
-{
-    options.Timeout = TimeSpan.FromSeconds(1800);
-});
+builder.Services.Configure<IdleInactivityTrackerOptions>(options => { options.Timeout = TimeSpan.FromSeconds(1800); });
 
 // Audio Service Event Handler
 builder.Services.AddSingleton<AudioServiceEventHandler>();

@@ -3,14 +3,14 @@ import {useState} from "react";
 import {SearchModeSelector} from "@/components/dashboard/search/SearchModeSelector";
 import {TrackSearchMode} from "@/datatypes/TrackSearchMode";
 import {RequestSearch} from "@/api/rest/apiService";
-import {Tabs, TabsContent, TabsTrigger, TabsList} from "@/components/ui/tabs";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {SearchResponseDto} from "@/dtos/SearchResponseDto";
 import SearchTrack from "@/components/dashboard/search/SearchTrack";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import InfoTooltip from "@/components/ui/info-tooltip";
 import SearchPlaylist from "@/components/dashboard/search/SearchPlaylist";
 import QueuedSongSkeleton from "@/components/skeletons/QueuedSongSkeleton";
-import {NotConnectedAlert} from "@/components/dashboard/search/NotConnectedAlert";
+import ErrorAlert from "@/components/dashboard/ErrorAlert";
 
 export interface SearchTabProps {
     guildId: number;
@@ -27,9 +27,8 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
     const [albumCount, setAlbumCount] = useState(state?.albumCount ?? 0)
     const [playlistCount, setPlaylistCount] = useState(state?.playlistCount ?? 0)
     const [activeTab, setActiveTab] = useState(state?.activeTab ?? "tracks")
-    const [loading, setLoading] = useState(state?.loading ?? false)
+    const [loading, setLoading] = useState(false)
     const [errorPlaying, setErrorPlaying] = useState(false);
-    const [forceRerender, setForceRerender] = useState(0);
 
     const onSearch = async (query: string, _searchMode?: string) => {
         setActiveTab("tracks")
@@ -69,13 +68,15 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
             albumCount: response?.albums?.length ?? 0,
             playlistCount: response?.playlists?.length ?? 0,
             activeTab: activeTab,
-            loading: false,
         })
     }
 
     return (
         <div className="w-full mt-2 h-full">
-            {errorPlaying && <NotConnectedAlert key={forceRerender}/>}
+            {/*user not in a voice channel*/}
+            {errorPlaying && <ErrorAlert title="No voice channel"
+                                         error="Please connect to a voice channel the bot can access and try again."
+                                         onDismiss={() => setErrorPlaying(false)}/>}
             <div className="flex justify-center items-center w-full space-x-1">
                 <SearchInput passedQuery={query} onSearch={onSearch} onChange={(query: string) => {
                     setTmpQuery(query)
@@ -88,7 +89,6 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                         albumCount: albumCount,
                         playlistCount: playlistCount,
                         activeTab: activeTab,
-                        loading: loading,
                     })
                 }}
                              placeholder="What do you want play?"/>
@@ -111,7 +111,6 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                           albumCount: albumCount,
                           playlistCount: playlistCount,
                           activeTab: value,
-                          loading: loading,
                       })
                   }}>
                 <div className="flex justify-center mt-3">
@@ -133,7 +132,6 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                                     <SearchTrack track={track} key={index} guildId={guildId}
                                                  setOnErrorPlaying={() => {
                                                      setErrorPlaying(true);
-                                                     setForceRerender(prev => prev + 1);
                                                  }}/>
                                 ))
                             ) : !loading ? (
@@ -150,7 +148,6 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                                     <SearchPlaylist playlist={album} key={index} guildId={guildId}
                                                     setOnErrorPlaying={() => {
                                                         setErrorPlaying(true);
-                                                        setForceRerender(prev => prev + 1);
                                                     }}/>
                                 ))
                             ) : query !== "" ? (
@@ -167,7 +164,6 @@ export default function SearchTab({guildId, state, setState}: SearchTabProps) {
                                     <SearchPlaylist playlist={playlist} key={index} guildId={guildId}
                                                     setOnErrorPlaying={() => {
                                                         setErrorPlaying(true);
-                                                        setForceRerender(prev => prev + 1);
                                                     }}/>
                                 ))
                             ) : query !== "" ? (
