@@ -17,7 +17,7 @@ export default function DashboardTabs({guildId, track}: DashboardTabsProps) {
     const [playlistState, setPlaylistState] = useState(null);
 
     return (
-        <div className="p-3 w-2/3">
+        <div className="p-3 flex-grow">
             <VerticalTabs defaultValue="search" className="flex-grow h-full items-center w-full">
                 <VerticalTabsList>
                     <VerticalTabsTrigger value="search" className="w-full">
