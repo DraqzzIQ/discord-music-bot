@@ -22,11 +22,15 @@ const searchMods = [
     },
     {
         value: TrackSearchMode.YouTubeMusic.prefix,
-        label: "YouTubeMusic",
+        label: "YouTube Music",
     },
     {
         value: TrackSearchMode.Link.prefix,
         label: "Link",
+    },
+    {
+        value: TrackSearchMode.AppleMusic.prefix,
+        label: "Apple Music",
     },
 ]
 

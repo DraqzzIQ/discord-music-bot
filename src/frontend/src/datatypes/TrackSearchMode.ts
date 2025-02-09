@@ -6,6 +6,7 @@ export class TrackSearchMode {
     // Only available when using the Lavasearch integration
     public static readonly Spotify = new TrackSearchMode("spsearch");
     public static readonly Deezer = new TrackSearchMode("dzsearch");
+    public static readonly AppleMusic = new TrackSearchMode("amsearch");
 
     private constructor(public readonly prefix: string) {}
 }
