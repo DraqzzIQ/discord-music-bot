@@ -16,7 +16,7 @@ services:
       - bot_net
     ports:
       - "8080:8080"
-  
+
   web-interface:
     image: web-interface:latest
     build:
