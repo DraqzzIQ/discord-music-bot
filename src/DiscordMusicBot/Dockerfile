@@ -2,7 +2,7 @@
 USER $APP_UID
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM base AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/DiscordMusicBot/DiscordMusicBot.csproj", "DiscordMusicBot.csproj"]
