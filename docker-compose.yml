@@ -31,7 +31,7 @@ services:
       - "4747:4747"
 
   db:
-    image: mongo
+    image: mongo:latest
     restart: unless-stopped
     env_file:
       - mongo.env
