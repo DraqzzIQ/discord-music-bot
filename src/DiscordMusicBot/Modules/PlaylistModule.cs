@@ -148,7 +148,7 @@ public class PlaylistModule(
             return;
         }
 
-        playlist.Tracks.Shuffle();
+        playlist.Tracks.ShuffleQueue();
 
         await dbService.UpdatePlaylistAsync(playlist).ConfigureAwait(false);
 

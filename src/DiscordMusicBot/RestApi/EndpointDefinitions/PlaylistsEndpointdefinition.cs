@@ -182,7 +182,7 @@ public class PlaylistsEndpointdefinition : BaseEndpointDefinition, IEndpointDefi
         if (!authorized)
             return result!;
 
-        playlist!.Tracks = playlist!.Tracks.Shuffle().ToList();
+        playlist!.Tracks = playlist!.Tracks.ShuffleQueue().ToList();
         await request.DbService.UpdatePlaylistAsync(playlist).ConfigureAwait(false);
 
         return Results.Ok();

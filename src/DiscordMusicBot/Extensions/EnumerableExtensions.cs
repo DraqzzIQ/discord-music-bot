@@ -2,12 +2,12 @@ namespace DiscordMusicBot.Extensions;
 
 public static class EnumerableExtensions
 {
-    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
+    public static IEnumerable<T> ShuffleQueue<T>(this IEnumerable<T> source)
     {
-        return source.Shuffle(Random.Shared);
+        return source.ShuffleQueue(Random.Shared);
     }
 
-    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random random)
+    public static IEnumerable<T> ShuffleQueue<T>(this IEnumerable<T> source, Random random)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(random);
